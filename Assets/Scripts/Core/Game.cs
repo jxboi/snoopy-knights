@@ -1,5 +1,7 @@
+using SnoopyKnights.Buildings;
 using SnoopyKnights.CameraControl;
 using SnoopyKnights.Grid;
+using SnoopyKnights.Res;
 using UnityEngine;
 
 namespace SnoopyKnights.Core
@@ -16,6 +18,10 @@ namespace SnoopyKnights.Core
         public CameraController Cam { get; private set; }
         public InputRouter InputRouter { get; private set; }
         public SelectionController Selection { get; private set; }
+        public ResourceStock Stock { get; private set; }
+        public BuildingManager Buildings { get; private set; }
+        public Building TownCenter { get; private set; }
+        public UI.Hud Hud { get; private set; }
 
         void Awake()
         {
@@ -32,8 +38,23 @@ namespace SnoopyKnights.Core
             InputRouter = CreateChild<InputRouter>("Input");
             InputRouter.Init(Cam);
 
+            Stock = new ResourceStock();
+            Stock.Add(ResourceType.Wood, GameConfig.StartWood);
+            Stock.Add(ResourceType.Stone, GameConfig.StartStone);
+            Stock.Add(ResourceType.Food, GameConfig.StartFood);
+            Stock.Add(ResourceType.Gold, GameConfig.StartGold);
+
+            Buildings = CreateChild<BuildingManager>("Buildings");
+            Buildings.Init(Map, Stock);
+            TownCenter = Buildings.Place(BuildingType.TownCenter,
+                GameConfig.TownCenterOrigin, instant: true, free: true);
+
             Selection = CreateChild<SelectionController>("Selection");
-            Selection.Init(Map, InputRouter);
+            Selection.Init(Map, InputRouter, Buildings);
+
+            Hud = UI.Hud.Create(this);
+
+            Cam.CenterOn(TownCenter.CenterWorld);
         }
 
         T CreateChild<T>(string name) where T : Component

@@ -6,7 +6,9 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 
 ## Status
 
-**Milestone 1** — project setup, grid map, camera controls, tile selection.
+**Milestone 2** — buildings, roads, resource stock, mobile build UI.
+Place a Woodcutter/Quarry/Storehouse (and more), paint roads by dragging,
+watch buildings construct. Workers and the real economy arrive in M3.
 
 ## How to run
 
@@ -23,7 +25,9 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 |---|---|
 | Drag | Pan camera |
 | Pinch | Zoom |
-| Tap | Select tile / building / unit |
+| Tap | Select building / unit |
+| Build button | Open build menu, tap a card, tap the map to aim, Place/Cancel |
+| Road card | Drag on the map to paint roads, then Done |
 
 In the editor: left-drag pans, mouse wheel zooms, click selects.
 

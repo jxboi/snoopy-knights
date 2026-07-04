@@ -1,3 +1,4 @@
+using SnoopyKnights.Buildings;
 using SnoopyKnights.Grid;
 using SnoopyKnights.Rendering;
 using UnityEngine;
@@ -5,52 +6,64 @@ using UnityEngine;
 namespace SnoopyKnights.Core
 {
     /// <summary>
-    /// Handles taps in the default input mode: selecting tiles (and later,
-    /// buildings and units). Shows a highlight over the selection.
+    /// Handles taps in the default input mode: tap a building to select it,
+    /// tap empty ground to deselect. (Unit selection arrives with units.)
     /// </summary>
     public sealed class SelectionController : MonoBehaviour
     {
-        public event System.Action<Vector2Int?> TileSelected;
+        public event System.Action<Building> BuildingSelected;
 
         GridMap map;
         SpriteRenderer highlight;
-        Vector2Int? selectedTile;
 
-        public Vector2Int? SelectedTile => selectedTile;
+        public Building SelectedBuilding { get; private set; }
 
-        public void Init(GridMap gridMap, InputRouter input)
+        public void Init(GridMap gridMap, InputRouter input, BuildingManager buildings)
         {
             map = gridMap;
             input.TapWorld += OnTapWorld;
+            buildings.Removed += b =>
+            {
+                if (b == SelectedBuilding) Deselect();
+            };
 
             highlight = SpriteFactory.NewRenderer(
-                transform, "TileHighlight", SpriteFactory.Square,
-                new Color(1f, 1f, 1f, 0.35f), SortLayer.Highlight);
+                transform, "SelectionHighlight", SpriteFactory.Square,
+                new Color(1f, 1f, 1f, 0.3f), SortLayer.Highlight);
             highlight.gameObject.SetActive(false);
         }
 
         void OnTapWorld(Vector2 world)
         {
             var t = GridMap.WorldToTile(world);
-            if (!map.InBounds(t) || (selectedTile.HasValue && selectedTile.Value == t))
+            if (!map.InBounds(t))
+            {
                 Deselect();
+                return;
+            }
+
+            var building = map.Get(t).Occupant as Building;
+            if (building != null && building != SelectedBuilding)
+                SelectBuilding(building);
             else
-                SelectTile(t);
+                Deselect();
         }
 
-        void SelectTile(Vector2Int t)
+        void SelectBuilding(Building b)
         {
-            selectedTile = t;
-            highlight.transform.position = GridMap.TileCenter(t);
+            SelectedBuilding = b;
+            highlight.transform.position = b.CenterWorld;
+            highlight.transform.localScale = new Vector3(b.Def.Width + 0.15f, b.Def.Height + 0.15f, 1f);
             highlight.gameObject.SetActive(true);
-            TileSelected?.Invoke(t);
+            BuildingSelected?.Invoke(b);
         }
 
         public void Deselect()
         {
-            selectedTile = null;
+            if (SelectedBuilding == null && !highlight.gameObject.activeSelf) return;
+            SelectedBuilding = null;
             highlight.gameObject.SetActive(false);
-            TileSelected?.Invoke(null);
+            BuildingSelected?.Invoke(null);
         }
     }
 }
