@@ -20,7 +20,7 @@ namespace SnoopyKnights.UI
             UiFactory.Stretch(safe);
             safe.gameObject.AddComponent<SafeArea>();
 
-            hud.ResourceBar = ResourceBar.Create(safe, game.Stock);
+            hud.ResourceBar = ResourceBar.Create(safe, game);
             hud.BuildMenu = BuildMenu.Create(safe, game);
             hud.BuildingPanel = BuildingPanel.Create(safe, game);
             hud.UnitPanel = UnitPanel.Create(safe, game);

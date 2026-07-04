@@ -1,5 +1,15 @@
 # Changelog
 
+## Milestone 4 — 2026-07-04
+
+- Food consumption: the settlement eats 1 food per unit per 45s; starvation
+  deals slow damage to all units and flashes the food counter red.
+- Kitchen bonus: farms yield 2 food per cycle while a staffed Kitchen operates.
+- Population cap from housing (Town Center +6, House +3), shown in the top bar.
+- Unit training: Town Center trains Builder/Carrier/Worker, Barracks will train
+  Guard/Archer (combat AI lands in M5). Queue with progress, costs paid upfront,
+  capped by population.
+
 ## Milestone 3 — 2026-07-04
 
 - A* pathfinding (4-dir); road tiles cost half, so paths prefer roads and

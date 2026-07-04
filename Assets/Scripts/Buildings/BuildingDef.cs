@@ -35,6 +35,9 @@ namespace SnoopyKnights.Buildings
         public Grid.TileType? GatherTile; // if set, worker harvests these tiles nearby
         public int GatherRadius = 7;
         public int OutputCap = 3;       // buffer waiting for carrier pickup
+
+        /// <summary>Unit types this building can train (Town Center, Barracks).</summary>
+        public Units.UnitType[] Trains = System.Array.Empty<Units.UnitType>();
     }
 
     public static class BuildingDefs
@@ -63,6 +66,7 @@ namespace SnoopyKnights.Buildings
                     Description = "Stores resources and trains workers. Protect it!",
                     Width = 3, Height = 3, MaxHealth = 600, IsStorage = true,
                     CanDemolish = false, PopulationBonus = 6,
+                    Trains = new[] { Units.UnitType.Builder, Units.UnitType.Carrier, Units.UnitType.Farmer },
                     BodyColor = new Color(0.78f, 0.68f, 0.47f),
                     Icon = IconShape.Diamond, IconColor = new Color(0.9f, 0.2f, 0.2f)
                 },
@@ -132,6 +136,7 @@ namespace SnoopyKnights.Buildings
                     Description = "Trains guards and archers to defend the settlement.",
                     Width = 2, Height = 2, MaxHealth = 350, BuildSeconds = 25f,
                     Cost = Cost(wood: 25, stone: 20),
+                    Trains = new[] { Units.UnitType.Guard, Units.UnitType.Archer },
                     BodyColor = new Color(0.58f, 0.47f, 0.47f),
                     Icon = IconShape.Square, IconColor = new Color(0.6f, 0.15f, 0.15f)
                 },

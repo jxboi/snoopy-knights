@@ -222,8 +222,9 @@ namespace SnoopyKnights.Units
             return found;
         }
 
-        /// <summary>Hook for the kitchen bonus (wired up in the economy milestone).</summary>
-        int ProduceAmount() => 1;
+        /// <summary>Farms yield double while a staffed kitchen is operating.</summary>
+        int ProduceAmount() =>
+            work.Def.Type == BuildingType.Farm && Ctx.Buildings.AnyStaffedKitchen() ? 2 : 1;
 
         void Unassign()
         {

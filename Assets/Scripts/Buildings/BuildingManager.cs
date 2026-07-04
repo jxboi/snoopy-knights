@@ -136,6 +136,15 @@ namespace SnoopyKnights.Buildings
         public Building FindNearestStorage(Vector2 from) =>
             FindNearest(from, b => b.Def.IsStorage && b.IsOperational);
 
+        /// <summary>A staffed kitchen makes farms yield double food per cycle.</summary>
+        public bool AnyStaffedKitchen()
+        {
+            foreach (var b in buildings)
+                if (b.Def.Type == BuildingType.Kitchen && b.IsOperational && b.AssignedWorker != null)
+                    return true;
+            return false;
+        }
+
         public bool AnyStorageAlive()
         {
             foreach (var b in buildings)

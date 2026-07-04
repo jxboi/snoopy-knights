@@ -1,5 +1,8 @@
+using System.Collections.Generic;
 using SnoopyKnights.Buildings;
 using SnoopyKnights.Core;
+using SnoopyKnights.Res;
+using SnoopyKnights.Units;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,9 +13,11 @@ namespace SnoopyKnights.UI
     {
         Game game;
         Building current;
+        TrainingHost host;
         RectTransform root;
         Text title, status;
         Button demolishBtn;
+        readonly List<(UnitType type, Button btn)> trainButtons = new List<(UnitType, Button)>();
 
         public static BuildingPanel Create(Transform parent, Game game)
         {
@@ -55,10 +60,35 @@ namespace SnoopyKnights.UI
         {
             current = b;
             root.gameObject.SetActive(b != null);
+            foreach (var (_, btn) in trainButtons)
+                Destroy(btn.gameObject);
+            trainButtons.Clear();
+            host = null;
             if (b == null) return;
+
             title.text = b.Def.Name;
             demolishBtn.gameObject.SetActive(b.Def.CanDemolish);
+
+            host = b.GetComponent<TrainingHost>();
+            root.sizeDelta = host != null ? new Vector2(540f, 410f) : new Vector2(520f, 290f);
+            if (host != null)
+                BuildTrainButtons(b);
             Refresh();
+        }
+
+        void BuildTrainButtons(Building b)
+        {
+            for (int i = 0; i < b.Def.Trains.Length; i++)
+            {
+                var type = b.Def.Trains[i];
+                var def = UnitDefs.Get(type);
+                var btn = UiFactory.Button(root, $"Train {def.Name}",
+                    $"{def.Name}\n{ResourceInfo.CostString(def.TrainCost)}", 26,
+                    new Color(0.25f, 0.32f, 0.2f, 0.95f), () => host.Enqueue(type));
+                UiFactory.Place((RectTransform)btn.transform, new Vector2(0f, 0f),
+                    new Vector2(24f + i * 168f, 120f), new Vector2(156f, 104f));
+                trainButtons.Add((type, btn));
+            }
         }
 
         void Update()
@@ -78,8 +108,15 @@ namespace SnoopyKnights.UI
                 sb.Append(current.AssignedWorker != null ? "\nWorker: staffed" : "\nWorker: needed");
             if (current.Def.Produces.HasValue)
                 sb.Append("\nAwaiting pickup: ").Append(current.OutputBuffer);
+            if (host != null && host.Queue.Count > 0)
+                sb.Append("\nTraining ").Append(UnitDefs.Get(host.Queue[0]).Name)
+                  .Append(' ').Append((int)(host.Progress01 * 100))
+                  .Append("%  (queue ").Append(host.Queue.Count).Append(')');
             sb.Append('\n').Append(current.Def.Description);
             status.text = sb.ToString();
+
+            foreach (var (type, btn) in trainButtons)
+                btn.interactable = host != null && host.CanEnqueue(type);
         }
 
         void Demolish()

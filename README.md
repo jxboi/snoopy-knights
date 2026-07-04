@@ -6,10 +6,10 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 
 ## Status
 
-**Milestone 3** — the living economy. Builders construct what you place,
-workers staff the Woodcutter/Quarry/Farm and harvest nearby tiles, carriers
-haul finished goods back to storage (resources only count once delivered).
-Roads make everyone faster and pathfinding prefers them.
+**Milestone 4** — food and population. Your settlement now eats: every unit
+consumes food over time, and an empty pantry slowly starves everyone. Farms
+grow food (double with a staffed Kitchen), Houses and the Town Center set the
+population cap, and the Town Center trains new Builders/Carriers/Workers.
 
 ## How to run
 

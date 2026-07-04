@@ -23,6 +23,7 @@ namespace SnoopyKnights.Core
         public BuildingManager Buildings { get; private set; }
         public Building TownCenter { get; private set; }
         public UnitManager Units { get; private set; }
+        public Economy.EconomySystem Economy { get; private set; }
         public UI.Hud Hud { get; private set; }
 
         void Awake()
@@ -52,6 +53,9 @@ namespace SnoopyKnights.Core
 
             Units = CreateChild<UnitManager>("Units");
             Units.Init(Map, Buildings, Stock);
+
+            Economy = CreateChild<Economy.EconomySystem>("Economy");
+            Economy.Init(Stock, Buildings, Units);
 
             TownCenter = Buildings.Place(BuildingType.TownCenter,
                 GameConfig.TownCenterOrigin, instant: true, free: true);
