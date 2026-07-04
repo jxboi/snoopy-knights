@@ -1,5 +1,25 @@
 # Changelog
 
+## Milestone 8 — real pixel art — 2026-07-04
+
+- Swapped procedural placeholder shapes for **Kenney pixel art** (CC0):
+  Tiny Town for tiles/buildings, Tiny Dungeon for characters. See
+  `Assets/Resources/Art/CREDITS.txt`.
+- Building sprites are composed from Tiny Town roof/wall/castle pieces (stone
+  keep for the Town Center, red-roof turret for the Watchtower, tilled field
+  for the Farm, distinct houses for the rest); unit sprites are villagers, an
+  armored knight, a green ranger, a skeleton, and an ogre.
+- `SpriteBank` loads art from Resources with a clean **procedural fallback** —
+  the game still runs if the art folder is absent.
+- `ArtImporter` (AssetPostprocessor) enforces crisp pixel-art import (point
+  filter, 16 px/unit, uncompressed; bottom-center pivot for buildings so they
+  anchor to their footprint and rise upward).
+- Buildings carry a small tool icon (axe/pickaxe/pitchfork/…) for at-a-glance
+  identity; roads render as a connected dirt path; rock and water tiles drawn
+  to match the pack.
+- New editor tools: `Reimport Art` (verifies sprites load) and a headless
+  `ScreenshotTool` for reviewing the look without a device.
+
 ## Milestone 7 — 2026-07-04
 
 - Pause menu (top-right): resume, save, load, restart. Pausing freezes the sim.

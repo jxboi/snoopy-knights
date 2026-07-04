@@ -4,8 +4,9 @@ using UnityEngine;
 namespace SnoopyKnights.Grid
 {
     /// <summary>
-    /// Draws the tile map with procedural sprites and keeps it in sync with
-    /// GridMap.TileChanged events. Roads render as connected strips.
+    /// Draws the tile map. Uses pixel-art sprites from SpriteBank when present,
+    /// falling back to tinted procedural shapes. Roads are a dirt path overlay;
+    /// adjacent dirt tiles read as a continuous, connected road.
     /// </summary>
     public sealed class GridRenderer : MonoBehaviour
     {
@@ -14,119 +15,121 @@ namespace SnoopyKnights.Grid
         static readonly Color WaterColor = new Color(0.27f, 0.47f, 0.71f);
         static readonly Color TreeColor = new Color(0.16f, 0.36f, 0.15f);
         static readonly Color RockColor = new Color(0.52f, 0.52f, 0.55f);
+        static readonly Color CobbleColor = new Color(0.5f, 0.5f, 0.54f);
         static readonly Color RoadColor = new Color(0.62f, 0.51f, 0.34f);
 
         GridMap map;
+        bool useArt;
         SpriteRenderer[] ground;
         SpriteRenderer[] overlay;   // tree/rock marker, created lazily
-        GameObject[] roadGroups;    // per-tile road strip group, rebuilt on change
+        SpriteRenderer[] road;      // dirt path overlay, created lazily
 
         public void Build(GridMap map)
         {
             this.map = map;
+            useArt = SpriteBank.HasArt;
             ground = new SpriteRenderer[map.Width * map.Height];
             overlay = new SpriteRenderer[map.Width * map.Height];
-            roadGroups = new GameObject[map.Width * map.Height];
+            road = new SpriteRenderer[map.Width * map.Height];
 
             for (int y = 0; y < map.Height; y++)
                 for (int x = 0; x < map.Width; x++)
                 {
                     ground[Idx(x, y)] = SpriteFactory.NewRenderer(
-                        transform, $"Tile {x},{y}", SpriteFactory.Square, Color.white,
-                        SortLayer.Ground, GridMap.TileCenter(x, y));
+                        transform, $"Tile {x},{y}",
+                        useArt ? SpriteBank.GroundGrass((x + y) % 2 == 0) : SpriteFactory.Square,
+                        Color.white, SortLayer.Ground, GridMap.TileCenter(x, y));
                     RefreshTile(x, y);
                 }
 
             map.TileChanged += OnTileChanged;
         }
 
-        void OnTileChanged(int x, int y)
-        {
-            RefreshTile(x, y);
-            // Road strips depend on neighbours, so refresh them too.
-            foreach (var d in GridMap.CardinalDirs)
-                if (map.InBounds(x + d.x, y + d.y))
-                    RefreshRoad(x + d.x, y + d.y);
-        }
+        void OnTileChanged(int x, int y) => RefreshTile(x, y);
 
         void RefreshTile(int x, int y)
         {
             var tile = map.Get(x, y);
+            SetGround(x, y, tile);
+            SetOverlay(x, y, tile);
+            SetRoad(x, y, tile);
+        }
 
-            ground[Idx(x, y)].color = tile.Type == TileType.Water
-                ? WaterColor
-                : ((x + y) % 2 == 0 ? GrassA : GrassB);
+        void SetGround(int x, int y, Tile tile)
+        {
+            var g = ground[Idx(x, y)];
+            bool alt = (x + y) % 2 == 0;
+            if (useArt)
+            {
+                g.color = Color.white;
+                g.sprite = tile.Type == TileType.Water ? SpriteBank.GroundWater
+                    : tile.Type == TileType.Rock ? SpriteBank.GroundCobble
+                    : SpriteBank.GroundGrass(alt);
+            }
+            else
+            {
+                g.color = tile.Type == TileType.Water ? WaterColor
+                    : tile.Type == TileType.Rock ? CobbleColor
+                    : (alt ? GrassA : GrassB);
+            }
+        }
 
-            // Tree / rock overlay.
-            bool wantsOverlay = tile.Type == TileType.Forest || tile.Type == TileType.Rock;
+        void SetOverlay(int x, int y, Tile tile)
+        {
+            bool wants = tile.Type == TileType.Forest || tile.Type == TileType.Rock;
             var ov = overlay[Idx(x, y)];
-            if (wantsOverlay)
+            if (!wants)
             {
-                if (ov == null)
-                {
-                    ov = SpriteFactory.NewRenderer(
-                        transform, $"Node {x},{y}", SpriteFactory.Circle, Color.white,
-                        SortLayer.NodeOverlay, GridMap.TileCenter(x, y));
-                    overlay[Idx(x, y)] = ov;
-                }
-                ov.gameObject.SetActive(true);
-                if (tile.Type == TileType.Forest)
-                {
-                    ov.sprite = SpriteFactory.Triangle; // pine-ish tree
-                    ov.color = TreeColor;
-                    ov.transform.localScale = new Vector3(0.8f, 0.9f, 1f);
-                }
-                else
-                {
-                    ov.sprite = SpriteFactory.Circle;
-                    ov.color = RockColor;
-                    ov.transform.localScale = new Vector3(0.75f, 0.6f, 1f);
-                }
-            }
-            else if (ov != null)
-            {
-                ov.gameObject.SetActive(false);
-            }
-
-            RefreshRoad(x, y);
-        }
-
-        void RefreshRoad(int x, int y)
-        {
-            var group = roadGroups[Idx(x, y)];
-            if (group != null)
-                Destroy(group);
-            roadGroups[Idx(x, y)] = null;
-
-            if (!map.Get(x, y).HasRoad)
+                if (ov != null) ov.gameObject.SetActive(false);
                 return;
+            }
 
-            group = new GameObject($"Road {x},{y}");
-            group.transform.SetParent(transform, false);
-            group.transform.localPosition = GridMap.TileCenter(x, y);
-            roadGroups[Idx(x, y)] = group;
-
-            // Centre pad plus an arm toward each connected neighbour.
-            SpriteFactory.NewRenderer(group.transform, "Pad", SpriteFactory.Square,
-                RoadColor, SortLayer.Road, Vector2.zero, 0.55f);
-
-            foreach (var d in GridMap.CardinalDirs)
+            if (ov == null)
             {
-                var n = new Vector2Int(x + d.x, y + d.y);
-                if (!map.InBounds(n) || !ConnectsRoad(n))
-                    continue;
-                var arm = SpriteFactory.NewRenderer(group.transform, "Arm", SpriteFactory.Square,
-                    RoadColor, SortLayer.Road, new Vector2(d.x * 0.25f, d.y * 0.25f));
-                arm.transform.localScale = d.x != 0
-                    ? new Vector3(0.5f, 0.55f, 1f)
-                    : new Vector3(0.55f, 0.5f, 1f);
+                ov = SpriteFactory.NewRenderer(transform, $"Node {x},{y}",
+                    SpriteFactory.Circle, Color.white, SortLayer.NodeOverlay, GridMap.TileCenter(x, y));
+                overlay[Idx(x, y)] = ov;
+            }
+            ov.gameObject.SetActive(true);
+
+            bool forest = tile.Type == TileType.Forest;
+            if (useArt)
+            {
+                ov.sprite = forest ? SpriteBank.Tree : SpriteBank.Rock;
+                ov.color = Color.white;
+                ov.transform.localScale = Vector3.one;
+            }
+            else if (forest)
+            {
+                ov.sprite = SpriteFactory.Triangle;
+                ov.color = TreeColor;
+                ov.transform.localScale = new Vector3(0.8f, 0.9f, 1f);
+            }
+            else
+            {
+                ov.sprite = SpriteFactory.Circle;
+                ov.color = RockColor;
+                ov.transform.localScale = new Vector3(0.75f, 0.6f, 1f);
             }
         }
 
-        bool ConnectsRoad(Vector2Int t)
+        void SetRoad(int x, int y, Tile tile)
         {
-            var tile = map.Get(t);
-            return tile.HasRoad || tile.Occupant != null; // roads visually attach to buildings
+            var r = road[Idx(x, y)];
+            if (!tile.HasRoad)
+            {
+                if (r != null) r.gameObject.SetActive(false);
+                return;
+            }
+
+            if (r == null)
+            {
+                r = SpriteFactory.NewRenderer(transform, $"Road {x},{y}",
+                    useArt ? SpriteBank.Road : SpriteFactory.Square,
+                    useArt ? Color.white : RoadColor, SortLayer.Road, GridMap.TileCenter(x, y));
+                road[Idx(x, y)] = r;
+            }
+            r.gameObject.SetActive(true);
         }
 
         int Idx(int x, int y) => y * map.Width + x;

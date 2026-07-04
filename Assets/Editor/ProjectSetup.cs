@@ -23,6 +23,29 @@ namespace SnoopyKnights.EditorTools
             Debug.Log("[ProjectSetup] Project configured.");
         }
 
+        /// <summary>
+        /// Reimports Resources/Art so the ArtImporter's sprite settings apply,
+        /// then verifies a representative sprite actually loads. Safe to run in
+        /// batch mode; used to guarantee art is ready before play/build.
+        /// </summary>
+        [MenuItem("Tools/Snoopy Knights/Reimport Art")]
+        public static void ReimportArt()
+        {
+            const string folder = "Assets/Resources/Art";
+            if (AssetDatabase.IsValidFolder(folder))
+                AssetDatabase.ImportAsset(folder, ImportAssetOptions.ImportRecursive);
+            AssetDatabase.Refresh();
+
+            int loaded = 0, total = 0;
+            foreach (var rel in new[] { "tiles/grass", "buildings/towncenter", "units/guard" })
+            {
+                total++;
+                if (Resources.Load<Sprite>("Art/" + rel) != null) loaded++;
+                else Debug.LogWarning($"[Art] Missing sprite: Art/{rel}");
+            }
+            Debug.Log($"[Art] Verified {loaded}/{total} representative sprites load as Sprite.");
+        }
+
         static void EnsureMainScene()
         {
             if (!System.IO.File.Exists(ScenePath))

@@ -88,23 +88,45 @@ namespace SnoopyKnights.Buildings
         {
             float w = Def.Width, h = Def.Height;
 
-            SpriteFactory.NewRenderer(transform, "Border", SpriteFactory.Square,
-                new Color(0.16f, 0.12f, 0.08f), SortLayer.Building)
-                .transform.localScale = new Vector3(w - 0.06f, h - 0.06f, 1f);
+            // Southern buildings draw in front of northern ones; all stay behind units.
+            int order = SortLayer.Building + (100 - Origin.y);
 
-            body = SpriteFactory.NewRenderer(transform, "Body", SpriteFactory.Square,
-                Def.BodyColor, SortLayer.Building + 1);
-            body.transform.localScale = new Vector3(w - 0.22f, h - 0.22f, 1f);
-
-            var iconSprite = Def.Icon switch
+            var artSprite = SpriteBank.Building(Def.Type);
+            if (artSprite != null)
             {
-                IconShape.Circle => SpriteFactory.Circle,
-                IconShape.Diamond => SpriteFactory.Diamond,
-                IconShape.Triangle => SpriteFactory.Triangle,
-                _ => SpriteFactory.Square
-            };
-            SpriteFactory.NewRenderer(transform, "Icon", iconSprite, Def.IconColor,
-                SortLayer.Building + 2, Vector2.zero, Mathf.Min(w, h) * 0.5f);
+                // Bottom-center pivot: anchor at the footprint's bottom edge and
+                // scale to the footprint width, letting the roof rise upward.
+                body = SpriteFactory.NewRenderer(transform, "Body", artSprite, Color.white,
+                    order, new Vector2(0f, -h * 0.5f));
+                float unitWidth = artSprite.bounds.size.x;
+                float scale = unitWidth > 0.01f ? w / unitWidth : 1f;
+                body.transform.localScale = new Vector3(scale, scale, 1f);
+
+                var toolIcon = SpriteBank.BuildingIcon(Def.Type);
+                if (toolIcon != null)
+                    SpriteFactory.NewRenderer(transform, "Icon", toolIcon, Color.white,
+                        order + 1, new Vector2(0f, h * 0.5f - 0.5f), 0.55f);
+            }
+            else
+            {
+                SpriteFactory.NewRenderer(transform, "Border", SpriteFactory.Square,
+                    new Color(0.16f, 0.12f, 0.08f), order)
+                    .transform.localScale = new Vector3(w - 0.06f, h - 0.06f, 1f);
+
+                body = SpriteFactory.NewRenderer(transform, "Body", SpriteFactory.Square,
+                    Def.BodyColor, order + 1);
+                body.transform.localScale = new Vector3(w - 0.22f, h - 0.22f, 1f);
+
+                var iconSprite = Def.Icon switch
+                {
+                    IconShape.Circle => SpriteFactory.Circle,
+                    IconShape.Diamond => SpriteFactory.Diamond,
+                    IconShape.Triangle => SpriteFactory.Triangle,
+                    _ => SpriteFactory.Square
+                };
+                SpriteFactory.NewRenderer(transform, "Icon", iconSprite, Def.IconColor,
+                    order + 2, Vector2.zero, Mathf.Min(w, h) * 0.5f);
+            }
 
             buildBar = WorldBar.Create(transform, new Vector2(0f, -h * 0.5f + 0.18f),
                 w * 0.8f, new Color(0.35f, 0.7f, 1f));

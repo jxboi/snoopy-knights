@@ -1,0 +1,6 @@
+Art derived from Kenney game assets (kenney.nl):
+  - Tiny Town  (https://kenney.nl/assets/tiny-town)
+  - Tiny Dungeon (https://kenney.nl/assets/tiny-dungeon)
+License: Creative Commons Zero (CC0) - public domain, no attribution required.
+Building sprites here are composed from Tiny Town tile pieces; unit sprites are
+cropped from Tiny Dungeon. Rock/water tiles are original, drawn to match.

@@ -5,7 +5,8 @@ the living-economy feel of *Knights and Merchants*. Build a small settlement,
 connect it with roads, keep your people fed, train defenders, and survive
 5 enemy waves.
 
-**Complete** — one polished mission, playable start to finish with touch only.
+**Complete** — one polished mission, playable start to finish with touch only,
+now with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*).
 
 ## The mission
 
@@ -80,8 +81,13 @@ Assets/Scripts/
   UI/            Code-built mobile HUD (safe-area aware, thumb-sized buttons)
   Save/          JSON save/load via scene reload
   Audio/         Synthesized placeholder SFX
-Assets/Editor/   Project setup tool + headless play-mode smoke test
+Assets/Resources/Art/  CC0 Kenney sprites (tiles, buildings, units, icons)
+Assets/Editor/   Project setup, art importer, smoke test, screenshot tool
 ```
+
+Art is loaded at runtime through `SpriteBank` (Resources) with a procedural
+fallback, so removing `Assets/Resources/Art` degrades gracefully to shapes
+rather than breaking. All art is CC0 (public domain) — see the CREDITS file.
 
 ## Testing
 

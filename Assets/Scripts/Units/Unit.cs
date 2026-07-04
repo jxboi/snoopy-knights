@@ -58,20 +58,32 @@ namespace SnoopyKnights.Units
 
         void BuildVisuals()
         {
-            SpriteFactory.NewRenderer(transform, "Border", SpriteFactory.Circle,
-                new Color(0.1f, 0.09f, 0.07f), SortLayer.Unit, Vector2.zero, 0.6f);
-            body = SpriteFactory.NewRenderer(transform, "Body", SpriteFactory.Circle,
-                Def.Color, SortLayer.Unit + 1, Vector2.zero, 0.5f);
-
-            var iconSprite = Def.Icon switch
+            var artSprite = SpriteBank.Unit(Def.Type);
+            if (artSprite != null)
             {
-                IconShape.Square => SpriteFactory.Square,
-                IconShape.Diamond => SpriteFactory.Diamond,
-                IconShape.Triangle => SpriteFactory.Triangle,
-                _ => SpriteFactory.Circle
-            };
-            icon = SpriteFactory.NewRenderer(transform, "Icon", iconSprite,
-                new Color(1f, 1f, 1f, 0.85f), SortLayer.Unit + 2, Vector2.zero, 0.24f).transform;
+                body = SpriteFactory.NewRenderer(transform, "Body", artSprite, Color.white,
+                    SortLayer.Unit + 1, Vector2.zero, 1f);
+                // Enemies get a subtle red wash to read as hostile at a glance.
+                if (Def.IsEnemy) body.color = new Color(1f, 0.82f, 0.82f);
+                icon = body.transform; // the work-bob animates the whole character
+            }
+            else
+            {
+                SpriteFactory.NewRenderer(transform, "Border", SpriteFactory.Circle,
+                    new Color(0.1f, 0.09f, 0.07f), SortLayer.Unit, Vector2.zero, 0.6f);
+                body = SpriteFactory.NewRenderer(transform, "Body", SpriteFactory.Circle,
+                    Def.Color, SortLayer.Unit + 1, Vector2.zero, 0.5f);
+
+                var iconSprite = Def.Icon switch
+                {
+                    IconShape.Square => SpriteFactory.Square,
+                    IconShape.Diamond => SpriteFactory.Diamond,
+                    IconShape.Triangle => SpriteFactory.Triangle,
+                    _ => SpriteFactory.Circle
+                };
+                icon = SpriteFactory.NewRenderer(transform, "Icon", iconSprite,
+                    new Color(1f, 1f, 1f, 0.85f), SortLayer.Unit + 2, Vector2.zero, 0.24f).transform;
+            }
 
             carryDot = SpriteFactory.NewRenderer(transform, "Carry", SpriteFactory.Square,
                 Color.white, SortLayer.Unit + 3, new Vector2(0f, 0.45f), 0.24f);
