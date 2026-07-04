@@ -75,10 +75,26 @@ namespace SnoopyKnights.Buildings
         {
             ghost = new GameObject($"Ghost {def.Name}");
 
-            var body = SpriteFactory.NewRenderer(ghost.transform, "Body", SpriteFactory.Square,
-                new Color(def.BodyColor.r, def.BodyColor.g, def.BodyColor.b, 0.55f),
-                SortLayer.Highlight + 1);
-            body.transform.localScale = new Vector3(def.Width - 0.2f, def.Height - 0.2f, 1f);
+            // Show the real building art as a translucent preview (matching the
+            // placed building's bottom-center pivot + width scaling). Fall back to
+            // a tinted square when no art is available.
+            var artSprite = SpriteBank.Building(def.Type);
+            if (artSprite != null)
+            {
+                var body = SpriteFactory.NewRenderer(ghost.transform, "Body", artSprite,
+                    new Color(1f, 1f, 1f, 0.6f), SortLayer.Highlight + 1,
+                    new Vector2(0f, -def.Height * 0.5f));
+                float unitWidth = artSprite.bounds.size.x;
+                float scale = unitWidth > 0.01f ? def.Width / unitWidth : 1f;
+                body.transform.localScale = new Vector3(scale, scale, 1f);
+            }
+            else
+            {
+                var body = SpriteFactory.NewRenderer(ghost.transform, "Body", SpriteFactory.Square,
+                    new Color(def.BodyColor.r, def.BodyColor.g, def.BodyColor.b, 0.55f),
+                    SortLayer.Highlight + 1);
+                body.transform.localScale = new Vector3(def.Width - 0.2f, def.Height - 0.2f, 1f);
+            }
 
             tileMarks = new SpriteRenderer[def.Width * def.Height + 1];
             int i = 0;

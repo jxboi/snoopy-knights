@@ -22,6 +22,7 @@ namespace SnoopyKnights.UI
         Game game;
         RectTransform strip;
         Button buildBtn, doneBtn, confirmBtn, cancelBtn;
+        Text placementCost;
         readonly List<(BuildingDef def, Button btn)> cards = new List<(BuildingDef, Button)>();
 
         BuildPlacementMode placement;
@@ -61,6 +62,13 @@ namespace SnoopyKnights.UI
                 new Vector2(115f, 30f), new Vector2(220f, 120f));
             cancelBtn.gameObject.SetActive(false);
 
+            // Name + cost banner shown above the Place/Cancel buttons while placing.
+            placementCost = UiFactory.Label(root, "PlacementCost", "", 34, Color.white,
+                TextAnchor.MiddleCenter);
+            UiFactory.Place((RectTransform)placementCost.transform, new Vector2(0.5f, 0f),
+                new Vector2(0f, 162f), new Vector2(460f, 44f));
+            placementCost.gameObject.SetActive(false);
+
             BuildStrip(root);
         }
 
@@ -80,15 +88,20 @@ namespace SnoopyKnights.UI
                 new Vector2(totalW, cardH + 20f));
             strip.gameObject.SetActive(false);
 
+            // Dirt swatch matching the in-world road fill (see GridRenderer.RoadColor).
             MakeCard(0, cardW, cardH, gap, totalW, "Road",
                 $"{GameConfig.RoadStoneCost}s /tile", SpriteFactory.Square,
-                new Color(0.62f, 0.51f, 0.34f), StartRoadMode, null);
+                new Color(0.918f, 0.647f, 0.424f), StartRoadMode, null);
 
             for (int i = 0; i < buildable.Count; i++)
             {
                 var def = buildable[i];
+                // Prefer the real building art; fall back to the geometric icon.
+                var art = SpriteBank.Building(def.Type);
+                Sprite cardIcon = art != null ? art : IconSprite(def.Icon);
+                Color cardIconColor = art != null ? Color.white : def.IconColor;
                 var btn = MakeCard(i + 1, cardW, cardH, gap, totalW, def.Name,
-                    ResourceInfo.CostString(def.Cost), IconSprite(def.Icon), def.IconColor,
+                    ResourceInfo.CostString(def.Cost), cardIcon, cardIconColor,
                     () => StartPlacement(def), def);
                 cards.Add((def, btn));
             }
@@ -105,20 +118,62 @@ namespace SnoopyKnights.UI
             UiFactory.Place(rt, new Vector2(0.5f, 0.5f), new Vector2(x, 0f), new Vector2(w, h));
 
             var img = UiFactory.Icon(rt, "Icon", icon, iconColor);
+            img.preserveAspect = true;
             UiFactory.Place((RectTransform)img.transform, new Vector2(0.5f, 1f),
                 new Vector2(0f, -14f), new Vector2(76f, 76f));
 
             var name = UiFactory.Label(rt, "Name", title, 28, Color.white, TextAnchor.MiddleCenter);
             UiFactory.Place((RectTransform)name.transform, new Vector2(0.5f, 0f),
-                new Vector2(0f, 78f), new Vector2(w, 34f));
+                new Vector2(0f, 84f), new Vector2(w, 34f));
 
-            var costLbl = UiFactory.Label(rt, "Cost", cost, 26,
-                new Color(0.95f, 0.85f, 0.4f), TextAnchor.MiddleCenter);
-            UiFactory.Place((RectTransform)costLbl.transform, new Vector2(0.5f, 0f),
-                new Vector2(0f, 34f), new Vector2(w, 32f));
+            // Cost sits on a dark pill so it's legible against the card art.
+            var costBg = UiFactory.Panel(rt, "CostBg", new Color(0f, 0f, 0f, 0.5f));
+            UiFactory.Place(costBg, new Vector2(0.5f, 0f),
+                new Vector2(0f, 24f), new Vector2(w - 20f, 46f));
+
+            // Buildings show a resource icon + amount per cost (matching the top
+            // resource bar) so it can't be misread as a time. The road card has no
+            // ResourceAmount[] so it falls back to its plain string.
+            if (def != null && def.Cost != null && def.Cost.Length > 0)
+                FillCostRow(costBg, def.Cost);
+            else
+            {
+                var costLbl = UiFactory.Label(costBg, "Cost", cost, 32,
+                    new Color(1f, 0.88f, 0.42f), TextAnchor.MiddleCenter);
+                UiFactory.Stretch((RectTransform)costLbl.transform);
+            }
 
             return btn;
         }
+
+        // Lays out "[icon] amount" pairs, centered, matching ResourceBar's icons.
+        static void FillCostRow(RectTransform pill, ResourceAmount[] cost)
+        {
+            var row = pill.gameObject.AddComponent<HorizontalLayoutGroup>();
+            row.childAlignment = TextAnchor.MiddleCenter;
+            row.spacing = 4f;
+            row.padding = new RectOffset(8, 8, 3, 3);
+            row.childControlWidth = row.childControlHeight = true;
+            row.childForceExpandWidth = row.childForceExpandHeight = false;
+
+            foreach (var c in cost)
+            {
+                var icon = UiFactory.Icon(pill, "ResIcon", ResIcon(c.Type), ResourceInfo.Color(c.Type));
+                var le = icon.gameObject.AddComponent<LayoutElement>();
+                le.preferredWidth = le.preferredHeight = 30f;
+
+                UiFactory.Label(pill, "ResAmt", c.Amount.ToString(), 32,
+                    Color.white, TextAnchor.MiddleLeft);
+            }
+        }
+
+        static Sprite ResIcon(ResourceType t) => t switch
+        {
+            ResourceType.Wood => SpriteFactory.Triangle,
+            ResourceType.Stone => SpriteFactory.Circle,
+            ResourceType.Food => SpriteFactory.Circle,
+            _ => SpriteFactory.Diamond
+        };
 
         static Sprite IconSprite(IconShape shape) => shape switch
         {
@@ -157,13 +212,18 @@ namespace SnoopyKnights.UI
             buildBtn.gameObject.SetActive(false);
             confirmBtn.gameObject.SetActive(true);
             cancelBtn.gameObject.SetActive(true);
+            placementCost.gameObject.SetActive(true);
             RefreshConfirm();
         }
 
         void RefreshConfirm()
         {
             if (placement == null) return;
-            confirmBtn.interactable = placement.IsValid && game.Buildings.CanAfford(placement.Def);
+            bool affordable = game.Buildings.CanAfford(placement.Def);
+            confirmBtn.interactable = placement.IsValid && affordable;
+
+            placementCost.text = $"{placement.Def.Name}  —  {ResourceInfo.CostString(placement.Def.Cost)}";
+            placementCost.color = affordable ? Color.white : new Color(1f, 0.5f, 0.45f);
         }
 
         void ConfirmPlacement()
@@ -185,6 +245,7 @@ namespace SnoopyKnights.UI
             game.InputRouter.Mode = null;
             confirmBtn.gameObject.SetActive(false);
             cancelBtn.gameObject.SetActive(false);
+            placementCost.gameObject.SetActive(false);
             buildBtn.gameObject.SetActive(true);
         }
 

@@ -16,7 +16,10 @@ namespace SnoopyKnights.Grid
         static readonly Color TreeColor = new Color(0.16f, 0.36f, 0.15f);
         static readonly Color RockColor = new Color(0.52f, 0.52f, 0.55f);
         static readonly Color CobbleColor = new Color(0.5f, 0.5f, 0.54f);
-        static readonly Color RoadColor = new Color(0.62f, 0.51f, 0.34f);
+        // Solid dirt fill matched to the tileset's dirt palette. We render roads
+        // as a full-cell square (not the tiles/dirt sprite, which is a grass/dirt
+        // transition piece) so adjacent road tiles merge into a continuous path.
+        static readonly Color RoadColor = new Color(0.918f, 0.647f, 0.424f);
 
         GridMap map;
         bool useArt;
@@ -125,8 +128,7 @@ namespace SnoopyKnights.Grid
             if (r == null)
             {
                 r = SpriteFactory.NewRenderer(transform, $"Road {x},{y}",
-                    useArt ? SpriteBank.Road : SpriteFactory.Square,
-                    useArt ? Color.white : RoadColor, SortLayer.Road, GridMap.TileCenter(x, y));
+                    SpriteFactory.Square, RoadColor, SortLayer.Road, GridMap.TileCenter(x, y));
                 road[Idx(x, y)] = r;
             }
             r.gameObject.SetActive(true);
