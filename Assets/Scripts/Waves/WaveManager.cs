@@ -84,6 +84,17 @@ namespace SnoopyKnights.Waves
             }
         };
 
+        /// <summary>Used by save/load. Enemy count comes from the restored units.</summary>
+        public void Restore(int waveNumber, int wavesCleared, float nextIn, int enemiesAlive)
+        {
+            WaveNumber = waveNumber;
+            WavesCleared = wavesCleared;
+            NextWaveIn = nextIn;
+            aliveEnemies = enemiesAlive;
+            WaveActive = enemiesAlive > 0;
+            AllWavesCleared = wavesCleared >= waves.Length;
+        }
+
         void Update()
         {
             if (WaveActive || AllWavesCleared || WaveNumber >= waves.Length)

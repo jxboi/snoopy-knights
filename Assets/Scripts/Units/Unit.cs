@@ -188,6 +188,7 @@ namespace SnoopyKnights.Units
         public void TakeDamage(int amount, Unit attacker)
         {
             if (IsDead) return;
+            Audio.AudioManager.Play(Audio.Sfx.Hit);
             Health = Mathf.Max(0, Health - amount);
             healthBar.Show(Health < Def.MaxHealth);
             healthBar.Set((float)Health / Def.MaxHealth);
@@ -197,6 +198,14 @@ namespace SnoopyKnights.Units
 
         /// <summary>Lets subclasses react (fight back, retarget).</summary>
         protected virtual void OnDamaged(Unit attacker) { }
+
+        /// <summary>Used by save/load: set health without triggering damage reactions.</summary>
+        public void RestoreHealth(int value)
+        {
+            Health = Mathf.Clamp(value, 1, Def.MaxHealth);
+            healthBar.Show(Health < Def.MaxHealth);
+            healthBar.Set((float)Health / Def.MaxHealth);
+        }
 
         public void Heal(int amount)
         {

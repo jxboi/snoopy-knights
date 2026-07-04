@@ -26,6 +26,8 @@ namespace SnoopyKnights.Combat
             var sr = SpriteFactory.NewRenderer(go.transform, "Sprite", SpriteFactory.Square,
                 new Color(0.95f, 0.93f, 0.8f), SortLayer.Projectile);
             sr.transform.localScale = new Vector3(0.3f, 0.08f, 1f);
+
+            Audio.AudioManager.Play(Audio.Sfx.Arrow);
         }
 
         void Update()

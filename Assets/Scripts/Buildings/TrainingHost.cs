@@ -50,6 +50,16 @@ namespace SnoopyKnights.Buildings
             return true;
         }
 
+        /// <summary>Used by save/load: restore an in-progress queue (already paid for).</summary>
+        public void RestoreQueue(IEnumerable<UnitType> types, float progress01)
+        {
+            queue.Clear();
+            queue.AddRange(types);
+            progress = queue.Count > 0
+                ? UnitDefs.Get(queue[0]).TrainSeconds * Mathf.Clamp01(progress01)
+                : 0f;
+        }
+
         void Update()
         {
             if (queue.Count == 0 || !building.IsOperational) return;

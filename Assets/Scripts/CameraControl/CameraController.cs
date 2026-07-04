@@ -65,6 +65,13 @@ namespace SnoopyKnights.CameraControl
             ClampToMap();
         }
 
+        /// <summary>Used by save/load.</summary>
+        public void SetView(Vector2 worldPos, float orthoSize)
+        {
+            cam.orthographicSize = Mathf.Clamp(orthoSize, MinOrthoSize, maxOrthoSize);
+            CenterOn(worldPos);
+        }
+
         void ClampToMap()
         {
             float halfH = cam.orthographicSize;

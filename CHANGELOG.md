@@ -1,5 +1,20 @@
 # Changelog
 
+## Milestone 7 — 2026-07-04
+
+- Pause menu (top-right): resume, save, load, restart. Pausing freezes the sim.
+- Basic save/load: JSON snapshot of resources, tiles/roads, buildings
+  (construction progress, health, output, training queues), units, wave state
+  and camera; restored through a clean scene reload. Worker jobs re-acquire.
+- Placeholder audio: all SFX synthesized at startup (taps, placement,
+  completion chime, arrows, hits, wave horn, victory/defeat jingles) — zero
+  audio assets, rate-limited to avoid spam.
+- Headless play-mode smoke test (`SmokeTest.Run`): boots the game in batch
+  mode, fast-forwards past wave 1, fails on any logged exception or if the
+  simulation didn't progress. Passing at 200 sim-seconds with 0 errors.
+- Fix: storage "alive" check no longer counts the building currently being
+  destroyed (defeat detection during the destruction event).
+
 ## Milestone 6 — 2026-07-04
 
 - Wave system: 5 hand-tuned waves (raiders, later brutes) spawning at the

@@ -151,6 +151,21 @@ namespace SnoopyKnights.Buildings
             RefreshOutputDots();
         }
 
+        /// <summary>Used by save/load: restore a partially built site.</summary>
+        public void RestoreConstruction(float progress)
+        {
+            if (State == BuildingState.Construction)
+                SetProgress(Mathf.Clamp(progress, 0f, 0.999f));
+        }
+
+        /// <summary>Used by save/load: set health without triggering damage events.</summary>
+        public void RestoreHealth(int value)
+        {
+            Health = Mathf.Clamp(value, 1, MaxHealth);
+            healthBar.Show(Health < MaxHealth);
+            healthBar.Set((float)Health / MaxHealth);
+        }
+
         void RefreshOutputDots()
         {
             if (outputDots == null) return;
@@ -194,6 +209,7 @@ namespace SnoopyKnights.Buildings
         public void TakeDamage(int amount)
         {
             if (Health <= 0) return;
+            Audio.AudioManager.Play(Audio.Sfx.Hit);
             Health = Mathf.Max(0, Health - amount);
             healthBar.Show(Health < MaxHealth);
             healthBar.Set((float)Health / MaxHealth);
