@@ -147,8 +147,10 @@ namespace SnoopyKnights.Buildings
 
         public bool AnyStorageAlive()
         {
+            // Health check matters: this runs during the BuildingDestroyed event,
+            // while the dead building is still in the list.
             foreach (var b in buildings)
-                if (b.Def.IsStorage && b.IsOperational)
+                if (b.Def.IsStorage && b.IsOperational && b.Health > 0)
                     return true;
             return false;
         }

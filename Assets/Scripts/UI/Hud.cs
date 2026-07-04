@@ -10,6 +10,9 @@ namespace SnoopyKnights.UI
         public BuildMenu BuildMenu { get; private set; }
         public BuildingPanel BuildingPanel { get; private set; }
         public UnitPanel UnitPanel { get; private set; }
+        public WavePanel WavePanel { get; private set; }
+        public ObjectivesPanel ObjectivesPanel { get; private set; }
+        public GameOverScreen GameOverScreen { get; private set; }
 
         public static Hud Create(Game game)
         {
@@ -24,6 +27,9 @@ namespace SnoopyKnights.UI
             hud.BuildMenu = BuildMenu.Create(safe, game);
             hud.BuildingPanel = BuildingPanel.Create(safe, game);
             hud.UnitPanel = UnitPanel.Create(safe, game);
+            hud.WavePanel = WavePanel.Create(safe, game.Waves);
+            hud.ObjectivesPanel = ObjectivesPanel.Create(safe, game.Mission);
+            hud.GameOverScreen = GameOverScreen.Create(safe, game.Mission);
             return hud;
         }
     }

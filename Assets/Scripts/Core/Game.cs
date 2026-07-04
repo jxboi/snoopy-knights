@@ -24,12 +24,15 @@ namespace SnoopyKnights.Core
         public Building TownCenter { get; private set; }
         public UnitManager Units { get; private set; }
         public Economy.EconomySystem Economy { get; private set; }
+        public Waves.WaveManager Waves { get; private set; }
+        public Mission.MissionController Mission { get; private set; }
         public UI.Hud Hud { get; private set; }
 
         void Awake()
         {
             Instance = this;
             Application.targetFrameRate = 60;
+            Time.timeScale = 1f; // fresh start after a restart from the end screen
 
             Map = MapGenerator.Generate(seed: 20260704);
 
@@ -57,10 +60,23 @@ namespace SnoopyKnights.Core
             Economy = CreateChild<Economy.EconomySystem>("Economy");
             Economy.Init(Stock, Buildings, Units);
 
+            // Watchtowers get their combat behaviour on completion.
+            Buildings.BuildingCompleted += b =>
+            {
+                if (b.Def.Type == BuildingType.Watchtower)
+                    b.gameObject.AddComponent<Combat.TowerCombat>().Init(b, Units);
+            };
+
             TownCenter = Buildings.Place(BuildingType.TownCenter,
                 GameConfig.TownCenterOrigin, instant: true, free: true);
 
             SpawnStartingUnits();
+
+            Waves = CreateChild<Waves.WaveManager>("Waves");
+            Waves.Init(Map, Units, Stock);
+
+            Mission = CreateChild<Mission.MissionController>("Mission");
+            Mission.Init(TownCenter, Buildings, Units, Stock, Waves);
 
             Selection = CreateChild<SelectionController>("Selection");
             Selection.Init(Map, InputRouter, Buildings, Units);

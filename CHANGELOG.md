@@ -1,5 +1,18 @@
 # Changelog
 
+## Milestone 6 — 2026-07-04
+
+- Wave system: 5 hand-tuned waves (raiders, later brutes) spawning at the
+  north/east/west map edges; ~2-2.5 minute countdowns between waves; waves
+  never overlap; gold bonus per cleared wave.
+- Watchtower combat: auto-targets the nearest enemy in 5.5 tiles, fires arrows.
+- Mission controller: objectives checklist (economy, food stock, defender,
+  survive waves), victory on final wave cleared, defeat when the Town Center
+  or all storage is destroyed.
+- UI: wave countdown banner (turns red during attacks), objectives panel,
+  full-screen victory/defeat overlay with restart.
+- Restart reloads the scene cleanly (bootstrap re-runs on scene load).
+
 ## Milestone 5 — 2026-07-04
 
 - `IDamageable` shared by units and buildings; buildings use footprint-edge

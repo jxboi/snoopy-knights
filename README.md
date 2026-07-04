@@ -6,11 +6,11 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 
 ## Status
 
-**Milestone 5** — combat. The Barracks trains Guards (melee) and Archers
-(ranged, with arrows). Soldiers hold a post, auto-engage enemies that come
-close, and return afterwards; tap a selected soldier's destination to move
-the post. Enemy raiders/brutes fight back, hunt workers, and raze buildings —
-the wave system that sends them arrives in M6.
+**Milestone 6** — the full mission loop. Five escalating enemy waves attack
+from the map edges on a countdown; watchtowers shoot back, kills and cleared
+waves pay gold. Objectives are tracked on screen. Survive all five waves for
+the victory screen; lose the Town Center (or all storage) and it's defeat,
+with a restart button.
 
 ## How to run
 
