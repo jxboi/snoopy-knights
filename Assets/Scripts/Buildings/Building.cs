@@ -30,11 +30,31 @@ namespace SnoopyKnights.Buildings
         SpriteRenderer body;
         WorldBar buildBar;
         WorldBar healthBar;
+        SpriteRenderer[] outputDots;
+
+        // ---- Economy bookkeeping (used by worker/carrier AI) -----------------
+
+        /// <summary>Finished goods waiting for a carrier.</summary>
+        public int OutputBuffer { get; private set; }
+        /// <summary>Carriers already on their way to pick up.</summary>
+        public int ClaimedOutput;
+        /// <summary>Builders working on / walking to this site.</summary>
+        public int ClaimedBuilders;
+        /// <summary>The production worker staffing this building.</summary>
+        public Units.Unit AssignedWorker;
+
+        public bool WantsWorker => Def.NeedsWorker && IsOperational && AssignedWorker == null;
+        public bool HasOutputForPickup => OutputBuffer - ClaimedOutput > 0;
 
         public Vector2 CenterWorld => new Vector2(Origin.x + Def.Width * 0.5f, Origin.y + Def.Height * 0.5f);
 
         /// <summary>The tile in front of the building where units interact with it.</summary>
         public Vector2Int EntranceTile => new Vector2Int(Origin.x + Def.Width / 2, Origin.y - 1);
+
+        /// <summary>True if the tile touches the footprint (units can work from there).</summary>
+        public bool IsAdjacentToFootprint(Vector2Int t) =>
+            t.x >= Origin.x - 1 && t.x <= Origin.x + Def.Width &&
+            t.y >= Origin.y - 1 && t.y <= Origin.y + Def.Height;
 
         public void Init(BuildingDef def, Vector2Int origin, bool instant)
         {
@@ -76,6 +96,51 @@ namespace SnoopyKnights.Buildings
             healthBar = WorldBar.Create(transform, new Vector2(0f, h * 0.5f - 0.18f),
                 w * 0.8f, new Color(0.3f, 0.85f, 0.3f));
             healthBar.Show(false);
+
+            if (Def.Produces.HasValue)
+            {
+                outputDots = new SpriteRenderer[Def.OutputCap];
+                var dotColor = Res.ResourceInfo.Color(Def.Produces.Value);
+                for (int i = 0; i < outputDots.Length; i++)
+                {
+                    outputDots[i] = SpriteFactory.NewRenderer(transform, "OutputDot",
+                        SpriteFactory.Square, dotColor, SortLayer.Building + 3,
+                        new Vector2((i - (outputDots.Length - 1) * 0.5f) * 0.3f, -h * 0.5f + 0.42f), 0.2f);
+                    outputDots[i].gameObject.SetActive(false);
+                }
+            }
+        }
+
+        // ---- Output buffer ---------------------------------------------------
+
+        public bool AddOutput(int amount)
+        {
+            if (!Def.Produces.HasValue || OutputBuffer >= Def.OutputCap) return false;
+            OutputBuffer = Mathf.Min(Def.OutputCap, OutputBuffer + amount);
+            RefreshOutputDots();
+            return true;
+        }
+
+        public bool TryTakeOutput()
+        {
+            if (OutputBuffer <= 0) return false;
+            OutputBuffer--;
+            RefreshOutputDots();
+            return true;
+        }
+
+        /// <summary>Used by save/load.</summary>
+        public void SetOutputBuffer(int value)
+        {
+            OutputBuffer = Mathf.Clamp(value, 0, Def.OutputCap);
+            RefreshOutputDots();
+        }
+
+        void RefreshOutputDots()
+        {
+            if (outputDots == null) return;
+            for (int i = 0; i < outputDots.Length; i++)
+                outputDots[i].gameObject.SetActive(i < OutputBuffer);
         }
 
         // ---- Construction --------------------------------------------------

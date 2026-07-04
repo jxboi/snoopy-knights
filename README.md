@@ -6,9 +6,10 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 
 ## Status
 
-**Milestone 2** — buildings, roads, resource stock, mobile build UI.
-Place a Woodcutter/Quarry/Storehouse (and more), paint roads by dragging,
-watch buildings construct. Workers and the real economy arrive in M3.
+**Milestone 3** — the living economy. Builders construct what you place,
+workers staff the Woodcutter/Quarry/Farm and harvest nearby tiles, carriers
+haul finished goods back to storage (resources only count once delivered).
+Roads make everyone faster and pathfinding prefers them.
 
 ## How to run
 

@@ -9,6 +9,7 @@ namespace SnoopyKnights.UI
         public ResourceBar ResourceBar { get; private set; }
         public BuildMenu BuildMenu { get; private set; }
         public BuildingPanel BuildingPanel { get; private set; }
+        public UnitPanel UnitPanel { get; private set; }
 
         public static Hud Create(Game game)
         {
@@ -22,6 +23,7 @@ namespace SnoopyKnights.UI
             hud.ResourceBar = ResourceBar.Create(safe, game.Stock);
             hud.BuildMenu = BuildMenu.Create(safe, game);
             hud.BuildingPanel = BuildingPanel.Create(safe, game);
+            hud.UnitPanel = UnitPanel.Create(safe, game);
             return hud;
         }
     }

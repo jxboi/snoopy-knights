@@ -2,6 +2,7 @@ using SnoopyKnights.Buildings;
 using SnoopyKnights.CameraControl;
 using SnoopyKnights.Grid;
 using SnoopyKnights.Res;
+using SnoopyKnights.Units;
 using UnityEngine;
 
 namespace SnoopyKnights.Core
@@ -21,6 +22,7 @@ namespace SnoopyKnights.Core
         public ResourceStock Stock { get; private set; }
         public BuildingManager Buildings { get; private set; }
         public Building TownCenter { get; private set; }
+        public UnitManager Units { get; private set; }
         public UI.Hud Hud { get; private set; }
 
         void Awake()
@@ -46,15 +48,38 @@ namespace SnoopyKnights.Core
 
             Buildings = CreateChild<BuildingManager>("Buildings");
             Buildings.Init(Map, Stock);
+            Buildings.AutoConstruct = false; // builders do the work now
+
+            Units = CreateChild<UnitManager>("Units");
+            Units.Init(Map, Buildings, Stock);
+
             TownCenter = Buildings.Place(BuildingType.TownCenter,
                 GameConfig.TownCenterOrigin, instant: true, free: true);
 
+            SpawnStartingUnits();
+
             Selection = CreateChild<SelectionController>("Selection");
-            Selection.Init(Map, InputRouter, Buildings);
+            Selection.Init(Map, InputRouter, Buildings, Units);
 
             Hud = UI.Hud.Create(this);
 
             Cam.CenterOn(TownCenter.CenterWorld);
+        }
+
+        void SpawnStartingUnits()
+        {
+            Vector2 door = GridMap.TileCenter(TownCenter.EntranceTile);
+            UnitType[] starters =
+            {
+                UnitType.Builder, UnitType.Builder,
+                UnitType.Carrier, UnitType.Carrier,
+                UnitType.Farmer, UnitType.Farmer
+            };
+            for (int i = 0; i < starters.Length; i++)
+            {
+                Vector2 offset = new Vector2((i % 3 - 1) * 0.8f, -(i / 3) * 0.8f);
+                Units.Spawn(starters[i], door + offset);
+            }
         }
 
         T CreateChild<T>(string name) where T : Component

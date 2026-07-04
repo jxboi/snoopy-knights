@@ -1,30 +1,41 @@
 using SnoopyKnights.Buildings;
 using SnoopyKnights.Grid;
 using SnoopyKnights.Rendering;
+using SnoopyKnights.Units;
 using UnityEngine;
 
 namespace SnoopyKnights.Core
 {
     /// <summary>
-    /// Handles taps in the default input mode: tap a building to select it,
-    /// tap empty ground to deselect. (Unit selection arrives with units.)
+    /// Handles taps in the default input mode: tap a unit or building to
+    /// select it, tap empty ground to deselect.
     /// </summary>
     public sealed class SelectionController : MonoBehaviour
     {
+        const float UnitTapRadius = 0.7f;
+
         public event System.Action<Building> BuildingSelected;
+        public event System.Action<Unit> UnitSelected;
 
         GridMap map;
+        UnitManager units;
         SpriteRenderer highlight;
 
         public Building SelectedBuilding { get; private set; }
+        public Unit SelectedUnit { get; private set; }
 
-        public void Init(GridMap gridMap, InputRouter input, BuildingManager buildings)
+        public void Init(GridMap gridMap, InputRouter input, BuildingManager buildings, UnitManager unitManager)
         {
             map = gridMap;
+            units = unitManager;
             input.TapWorld += OnTapWorld;
             buildings.Removed += b =>
             {
                 if (b == SelectedBuilding) Deselect();
+            };
+            unitManager.UnitDied += u =>
+            {
+                if (u == SelectedUnit) Deselect();
             };
 
             highlight = SpriteFactory.NewRenderer(
@@ -42,6 +53,14 @@ namespace SnoopyKnights.Core
                 return;
             }
 
+            // Units first (they're small and walk over building entrances).
+            var unit = units.FindNearest(world, UnitTapRadius, u => u != SelectedUnit);
+            if (unit != null)
+            {
+                SelectUnit(unit);
+                return;
+            }
+
             var building = map.Get(t).Occupant as Building;
             if (building != null && building != SelectedBuilding)
                 SelectBuilding(building);
@@ -49,8 +68,20 @@ namespace SnoopyKnights.Core
                 Deselect();
         }
 
+        void SelectUnit(Unit u)
+        {
+            Clear();
+            SelectedUnit = u;
+            highlight.transform.SetParent(u.transform, false);
+            highlight.transform.localPosition = Vector3.zero;
+            highlight.transform.localScale = new Vector3(0.85f, 0.85f, 1f);
+            highlight.gameObject.SetActive(true);
+            UnitSelected?.Invoke(u);
+        }
+
         void SelectBuilding(Building b)
         {
+            Clear();
             SelectedBuilding = b;
             highlight.transform.position = b.CenterWorld;
             highlight.transform.localScale = new Vector3(b.Def.Width + 0.15f, b.Def.Height + 0.15f, 1f);
@@ -58,12 +89,25 @@ namespace SnoopyKnights.Core
             BuildingSelected?.Invoke(b);
         }
 
+        void Clear()
+        {
+            highlight.transform.SetParent(transform, false);
+            if (SelectedBuilding != null)
+            {
+                SelectedBuilding = null;
+                BuildingSelected?.Invoke(null);
+            }
+            if (SelectedUnit != null)
+            {
+                SelectedUnit = null;
+                UnitSelected?.Invoke(null);
+            }
+        }
+
         public void Deselect()
         {
-            if (SelectedBuilding == null && !highlight.gameObject.activeSelf) return;
-            SelectedBuilding = null;
+            Clear();
             highlight.gameObject.SetActive(false);
-            BuildingSelected?.Invoke(null);
         }
     }
 }

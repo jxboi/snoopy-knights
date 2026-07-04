@@ -71,7 +71,15 @@ namespace SnoopyKnights.UI
             string state = current.State == BuildingState.Construction
                 ? $"Under construction  {(int)(current.ConstructionProgress * 100)}%"
                 : "Operational";
-            status.text = $"{state}\nHP {current.Health}/{current.MaxHealth}\n{current.Def.Description}";
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append(state).Append("\nHP ").Append(current.Health).Append('/').Append(current.MaxHealth);
+            if (current.Def.NeedsWorker && current.IsOperational)
+                sb.Append(current.AssignedWorker != null ? "\nWorker: staffed" : "\nWorker: needed");
+            if (current.Def.Produces.HasValue)
+                sb.Append("\nAwaiting pickup: ").Append(current.OutputBuffer);
+            sb.Append('\n').Append(current.Def.Description);
+            status.text = sb.ToString();
         }
 
         void Demolish()

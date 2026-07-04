@@ -27,6 +27,14 @@ namespace SnoopyKnights.Buildings
         public bool CanDemolish = true;
         public bool IsStorage;          // carriers deliver here; losing all storage loses the game
         public int PopulationBonus;     // added to the population cap when operational
+
+        // Production (buildings that employ a worker).
+        public bool NeedsWorker;
+        public ResourceType? Produces;  // what ends up in the output buffer
+        public float CycleSeconds = 5f; // one work cycle (chop/mine/tend)
+        public Grid.TileType? GatherTile; // if set, worker harvests these tiles nearby
+        public int GatherRadius = 7;
+        public int OutputCap = 3;       // buffer waiting for carrier pickup
     }
 
     public static class BuildingDefs
@@ -73,6 +81,8 @@ namespace SnoopyKnights.Buildings
                     Description = "A worker chops nearby trees for wood.",
                     Width = 2, Height = 2, MaxHealth = 250, BuildSeconds = 12f,
                     Cost = Cost(wood: 15),
+                    NeedsWorker = true, Produces = ResourceType.Wood,
+                    CycleSeconds = 3.5f, GatherTile = Grid.TileType.Forest,
                     BodyColor = new Color(0.55f, 0.42f, 0.28f),
                     Icon = IconShape.Triangle, IconColor = new Color(0.2f, 0.5f, 0.2f)
                 },
@@ -82,6 +92,8 @@ namespace SnoopyKnights.Buildings
                     Description = "A worker mines nearby rocks for stone.",
                     Width = 2, Height = 2, MaxHealth = 250, BuildSeconds = 12f,
                     Cost = Cost(wood: 15),
+                    NeedsWorker = true, Produces = ResourceType.Stone,
+                    CycleSeconds = 3.5f, GatherTile = Grid.TileType.Rock,
                     BodyColor = new Color(0.6f, 0.6f, 0.62f),
                     Icon = IconShape.Circle, IconColor = new Color(0.45f, 0.45f, 0.48f)
                 },
@@ -91,6 +103,7 @@ namespace SnoopyKnights.Buildings
                     Description = "A farmer grows food in the surrounding fields.",
                     Width = 3, Height = 3, MaxHealth = 250, BuildSeconds = 18f,
                     Cost = Cost(wood: 20, stone: 5),
+                    NeedsWorker = true, Produces = ResourceType.Food, CycleSeconds = 6f,
                     BodyColor = new Color(0.8f, 0.72f, 0.4f),
                     Icon = IconShape.Square, IconColor = new Color(0.95f, 0.85f, 0.3f)
                 },
@@ -100,6 +113,7 @@ namespace SnoopyKnights.Buildings
                     Description = "Turns harvests into hearty meals: farms yield extra food.",
                     Width = 2, Height = 2, MaxHealth = 250, BuildSeconds = 15f,
                     Cost = Cost(wood: 15, stone: 10),
+                    NeedsWorker = true,
                     BodyColor = new Color(0.75f, 0.5f, 0.35f),
                     Icon = IconShape.Circle, IconColor = new Color(0.95f, 0.55f, 0.2f)
                 },
