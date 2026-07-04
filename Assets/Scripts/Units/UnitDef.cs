@@ -29,6 +29,9 @@ namespace SnoopyKnights.Units
         // Training (at Town Center for workers, Barracks for soldiers).
         public ResourceAmount[] TrainCost = System.Array.Empty<ResourceAmount>();
         public float TrainSeconds = 8f;
+
+        /// <summary>Gold paid to the player when this (enemy) unit dies.</summary>
+        public int GoldReward;
     }
 
     public static class UnitDefs
@@ -91,14 +94,16 @@ namespace SnoopyKnights.Units
                     Type = UnitType.Raider, Name = "Raider", IsEnemy = true,
                     Color = new Color(0.25f, 0.22f, 0.28f), Icon = IconShape.Diamond,
                     MoveSpeed = 1.9f, MaxHealth = 70,
-                    Damage = 8, AttackInterval = 1f, AttackRange = 0.9f, AggroRange = 5f
+                    Damage = 8, AttackInterval = 1f, AttackRange = 0.9f, AggroRange = 5f,
+                    GoldReward = 4
                 },
                 new UnitDef
                 {
                     Type = UnitType.Brute, Name = "Brute", IsEnemy = true,
                     Color = new Color(0.45f, 0.15f, 0.15f), Icon = IconShape.Diamond,
                     MoveSpeed = 1.55f, MaxHealth = 230,
-                    Damage = 20, AttackInterval = 1.4f, AttackRange = 1f, AggroRange = 6f
+                    Damage = 20, AttackInterval = 1.4f, AttackRange = 1f, AggroRange = 6f,
+                    GoldReward = 10
                 }
             };
 

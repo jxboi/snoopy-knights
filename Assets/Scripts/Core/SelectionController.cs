@@ -61,6 +61,15 @@ namespace SnoopyKnights.Core
                 return;
             }
 
+            // A selected soldier moves to tapped open ground (stays selected).
+            if (SelectedUnit is SoldierUnit soldier && map.IsWalkable(t))
+            {
+                soldier.OrderMove(t);
+                FadeOutSprite.Spawn(GridMap.TileCenter(t), SpriteFactory.Circle,
+                    new Color(0.4f, 0.9f, 0.4f, 0.8f), 0.7f, 0.7f);
+                return;
+            }
+
             var building = map.Get(t).Occupant as Building;
             if (building != null && building != SelectedBuilding)
                 SelectBuilding(building);

@@ -1,5 +1,18 @@
 # Changelog
 
+## Milestone 5 — 2026-07-04
+
+- `IDamageable` shared by units and buildings; buildings use footprint-edge
+  distance for range checks.
+- Guards (melee) and Archers (homing arrow projectiles) trainable at the
+  Barracks. Post-and-leash AI: engage nearby enemies, don't chase forever,
+  return to post. Fight back when shot.
+- One-finger soldier orders: with a soldier selected, tap open ground to move
+  its post (green marker feedback). No box selection, no right-click.
+- Enemy AI: raiders and brutes chase nearby defenders/workers, otherwise march
+  on buildings (watchtowers preferred) and raze them; retarget onto attackers;
+  drop gold bounties when killed (4/10).
+
 ## Milestone 4 — 2026-07-04
 
 - Food consumption: the settlement eats 1 food per unit per 45s; starvation

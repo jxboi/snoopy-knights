@@ -6,10 +6,11 @@ connect it with roads, keep your people fed, and survive 5 enemy waves.
 
 ## Status
 
-**Milestone 4** — food and population. Your settlement now eats: every unit
-consumes food over time, and an empty pantry slowly starves everyone. Farms
-grow food (double with a staffed Kitchen), Houses and the Town Center set the
-population cap, and the Town Center trains new Builders/Carriers/Workers.
+**Milestone 5** — combat. The Barracks trains Guards (melee) and Archers
+(ranged, with arrows). Soldiers hold a post, auto-engage enemies that come
+close, and return afterwards; tap a selected soldier's destination to move
+the post. Enemy raiders/brutes fight back, hunt workers, and raze buildings —
+the wave system that sends them arrives in M6.
 
 ## How to run
 

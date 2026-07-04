@@ -66,7 +66,8 @@ namespace SnoopyKnights.UI
 
         void Refresh()
         {
-            status.text = $"{current.Status}\nHP {current.Health}/{current.Def.MaxHealth}";
+            string hint = current is SoldierUnit ? "\nTap the map to move this soldier." : "";
+            status.text = $"{current.Status}\nHP {current.Health}/{current.Def.MaxHealth}{hint}";
         }
     }
 }

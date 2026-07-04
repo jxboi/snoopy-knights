@@ -21,7 +21,7 @@ namespace SnoopyKnights.Units
     /// Base unit: movement along A* paths, health, and procedural visuals.
     /// Subclasses implement behaviour in Tick().
     /// </summary>
-    public class Unit : MonoBehaviour
+    public class Unit : MonoBehaviour, Combat.IDamageable
     {
         public UnitDef Def { get; private set; }
         public int Health { get; private set; }
@@ -180,14 +180,23 @@ namespace SnoopyKnights.Units
 
         // ---- Health -----------------------------------------------------------
 
-        public void TakeDamage(int amount)
+        public bool IsAlive => !IsDead;
+        public Vector2 AimPoint => transform.position;
+
+        public void TakeDamage(int amount) => TakeDamage(amount, null);
+
+        public void TakeDamage(int amount, Unit attacker)
         {
             if (IsDead) return;
             Health = Mathf.Max(0, Health - amount);
             healthBar.Show(Health < Def.MaxHealth);
             healthBar.Set((float)Health / Def.MaxHealth);
             if (Health == 0) Die();
+            else OnDamaged(attacker);
         }
+
+        /// <summary>Lets subclasses react (fight back, retarget).</summary>
+        protected virtual void OnDamaged(Unit attacker) { }
 
         public void Heal(int amount)
         {

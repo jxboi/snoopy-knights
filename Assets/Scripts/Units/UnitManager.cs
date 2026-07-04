@@ -34,7 +34,9 @@ namespace SnoopyKnights.Units
                 UnitType.Builder => go.AddComponent<BuilderUnit>(),
                 UnitType.Carrier => go.AddComponent<CarrierUnit>(),
                 UnitType.Farmer => go.AddComponent<WorkerUnit>(),
-                _ => go.AddComponent<Unit>()
+                UnitType.Guard => go.AddComponent<SoldierUnit>(),
+                UnitType.Archer => go.AddComponent<SoldierUnit>(),
+                _ => go.AddComponent<EnemyUnit>()
             };
             unit.Init(ctx, def, pos);
             unit.Died += HandleDied;

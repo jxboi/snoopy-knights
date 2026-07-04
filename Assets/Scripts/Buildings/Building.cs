@@ -10,7 +10,7 @@ namespace SnoopyKnights.Buildings
     /// A placed building: construction progress, health, and procedural visuals.
     /// Production logic lives in the economy layer, not here.
     /// </summary>
-    public sealed class Building : MonoBehaviour, ITileOccupant
+    public sealed class Building : MonoBehaviour, ITileOccupant, Combat.IDamageable
     {
         public BuildingDef Def { get; private set; }
         public Vector2Int Origin { get; private set; }
@@ -55,6 +55,21 @@ namespace SnoopyKnights.Buildings
         public bool IsAdjacentToFootprint(Vector2Int t) =>
             t.x >= Origin.x - 1 && t.x <= Origin.x + Def.Width &&
             t.y >= Origin.y - 1 && t.y <= Origin.y + Def.Height;
+
+        public Vector2 ClosestPoint(Vector2 from) => new Vector2(
+            Mathf.Clamp(from.x, Origin.x, Origin.x + Def.Width),
+            Mathf.Clamp(from.y, Origin.y, Origin.y + Def.Height));
+
+        /// <summary>Distance to the footprint edge (0 when touching), for attack range checks.</summary>
+        public float DistanceTo(Vector2 from) => Vector2.Distance(from, ClosestPoint(from));
+
+        public Vector2Int ClosestFootprintTile(Vector2 from)
+        {
+            var p = ClosestPoint(from);
+            return new Vector2Int(
+                Mathf.Clamp(Mathf.FloorToInt(p.x), Origin.x, Origin.x + Def.Width - 1),
+                Mathf.Clamp(Mathf.FloorToInt(p.y), Origin.y, Origin.y + Def.Height - 1));
+        }
 
         public void Init(BuildingDef def, Vector2Int origin, bool instant)
         {
@@ -172,6 +187,9 @@ namespace SnoopyKnights.Buildings
         }
 
         // ---- Damage ----------------------------------------------------------
+
+        public bool IsAlive => Health > 0;
+        public Vector2 AimPoint => CenterWorld;
 
         public void TakeDamage(int amount)
         {
