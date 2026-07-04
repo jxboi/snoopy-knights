@@ -31,7 +31,9 @@ namespace SnoopyKnights.Rendering
         public static Sprite GroundWater => Load("tiles/water");
         public static Sprite Road => Load("tiles/dirt");
         public static Sprite Tree => Load("tiles/tree");
+        public static Sprite TreeAutumn => Load("tiles/tree_autumn");
         public static Sprite Rock => Load("tiles/rock");
+        public static Sprite Bush => Load("tiles/bush");
 
         /// <summary>A small tool icon that identifies a building at a glance, or null.</summary>
         public static Sprite BuildingIcon(BuildingType t)

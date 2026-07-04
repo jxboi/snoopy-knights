@@ -9,9 +9,12 @@ namespace SnoopyKnights.Rendering
     /// </summary>
     public static class SpriteFactory
     {
-        static Sprite square, circle, diamond, triangle;
+        static Sprite square, circle, diamond, triangle, softCircle;
 
         public static Sprite Square => square != null ? square : square = MakeSquare();
+
+        /// <summary>Radial alpha falloff — for shadows and smoke.</summary>
+        public static Sprite SoftCircle => softCircle != null ? softCircle : softCircle = MakeSoftCircle();
         public static Sprite Circle => circle != null ? circle : circle = MakeShape(64, (x, y) =>
         {
             float dx = x - 31.5f, dy = y - 31.5f;
@@ -34,6 +37,25 @@ namespace SnoopyKnights.Rendering
             tex.Apply();
             tex.filterMode = FilterMode.Point;
             return Sprite.Create(tex, new Rect(0, 0, 4, 4), new Vector2(0.5f, 0.5f), 4f);
+        }
+
+        static Sprite MakeSoftCircle()
+        {
+            const int size = 64;
+            var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            var pixels = new Color32[size * size];
+            for (int y = 0; y < size; y++)
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = x - 31.5f, dy = y - 31.5f;
+                    float d = Mathf.Sqrt(dx * dx + dy * dy) / 30f;
+                    byte a = (byte)(255f * Mathf.Clamp01(1f - d * d));
+                    pixels[y * size + x] = new Color32(255, 255, 255, a);
+                }
+            tex.SetPixels32(pixels);
+            tex.Apply();
+            tex.filterMode = FilterMode.Bilinear;
+            return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
         }
 
         static Sprite MakeShape(int size, System.Func<int, int, bool> inside)
@@ -68,16 +90,25 @@ namespace SnoopyKnights.Rendering
         }
     }
 
-    /// <summary>Sprite sorting bands, back to front.</summary>
+    /// <summary>
+    /// Sprite sorting bands, back to front. Buildings, units and trees share
+    /// one y-sorted world band (see World): things lower on the map draw in
+    /// front of things above them. Building/Unit are the within-composite
+    /// child orders under each SortingGroup.
+    /// </summary>
     public static class SortLayer
     {
         public const int Ground = 0;
         public const int Road = 10;
-        public const int NodeOverlay = 20;   // trees, rocks
+        public const int Decor = 15;         // bushes, ground clutter
         public const int Building = 100;
         public const int Unit = 200;
-        public const int Projectile = 300;
-        public const int Bar = 400;          // health/progress bars
-        public const int Highlight = 500;
+        public const int Projectile = 600;
+        public const int Bar = 700;          // health/progress bars
+        public const int Highlight = 800;
+
+        /// <summary>Y-sorted order from a world-space baseline (feet / footprint bottom).</summary>
+        public static int World(float baselineY) =>
+            Building + Mathf.RoundToInt((40f - baselineY) * 8f);
     }
 }

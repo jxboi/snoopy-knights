@@ -1,5 +1,21 @@
 # Changelog
 
+## Milestone 11 — graphics polish — 2026-07-04
+
+- Soft drop shadows under every unit and building (they deepen as a site
+  finishes construction) — everything sits on the ground instead of floating.
+- Proper depth: units, buildings and trees now y-sort against each other
+  (SortingGroup per composite), so a villager walking behind the Town Center
+  disappears behind it instead of drawing on the roof.
+- Living terrain: grass variants scattered by hash instead of checkerboarded,
+  small bushes dot open grass (and yield to roads/buildings), trees and rocks
+  get per-tile jitter/scale, ~1 in 5 trees is an autumn variant, and dense
+  forest tiles draw a second background tree. All deterministic per tile.
+- Water shimmers gently; roads get a per-tile tone variation; a darkened
+  grass skirt fades the map edge into the background instead of a hard cut.
+- Ambient chimney smoke drifts from the Town Center, Kitchens and Houses.
+- Enemies wear a stronger red wash so hostiles read instantly.
+
 ## Milestone 10 — polish — 2026-07-04
 
 - Wave intel: the top banner now says where the next attack comes from

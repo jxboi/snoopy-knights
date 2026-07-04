@@ -8,8 +8,9 @@ connect it with roads, keep your people fed, train defenders, and survive
 **Complete** — one polished mission, playable start to finish with touch only,
 with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*), a game-feel
 pass (unit facing, hit flashes, floating damage/resource text, death puffs,
-camera shake, button feedback) and a polish pass (wave-direction intel,
-2x fast-forward, objective chimes, end-of-mission stats).
+camera shake, button feedback), a polish pass (wave-direction intel,
+2x fast-forward, objective chimes, end-of-mission stats) and a graphics pass
+(drop shadows, y-sorted depth, terrain variety, water shimmer, chimney smoke).
 
 ## The mission
 

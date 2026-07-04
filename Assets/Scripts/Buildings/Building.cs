@@ -29,6 +29,7 @@ namespace SnoopyKnights.Buildings
 
         SpriteRenderer body;
         SpriteRenderer flash;
+        SpriteRenderer shadow;
         WorldBar buildBar;
         WorldBar healthBar;
         SpriteRenderer[] outputDots;
@@ -49,6 +50,11 @@ namespace SnoopyKnights.Buildings
         public bool HasOutputForPickup => OutputBuffer - ClaimedOutput > 0;
 
         public Vector2 CenterWorld => new Vector2(Origin.x + Def.Width * 0.5f, Origin.y + Def.Height * 0.5f);
+
+        /// <summary>Where chimney smoke rises from (upper part of the sprite).</summary>
+        public Vector2 ChimneyWorld => body != null
+            ? new Vector2(body.bounds.center.x + Def.Width * 0.2f, body.bounds.max.y - 0.12f)
+            : CenterWorld;
 
         /// <summary>The tile in front of the building where units interact with it.</summary>
         public Vector2Int EntranceTile => new Vector2Int(Origin.x + Def.Width / 2, Origin.y - 1);
@@ -90,8 +96,14 @@ namespace SnoopyKnights.Buildings
         {
             float w = Def.Width, h = Def.Height;
 
-            // Southern buildings draw in front of northern ones; all stay behind units.
-            int order = SortLayer.Building + (100 - Origin.y);
+            // The whole composite y-sorts against units and trees by its footprint base.
+            gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>()
+                .sortingOrder = SortLayer.World(Origin.y);
+            int order = SortLayer.Building;
+
+            shadow = SpriteFactory.NewRenderer(transform, "Shadow", SpriteFactory.SoftCircle,
+                new Color(0f, 0f, 0f, 0.12f), order - 5, new Vector2(0f, -h * 0.5f + 0.02f));
+            shadow.transform.localScale = new Vector3(w * 1.12f, 0.7f, 1f);
 
             var artSprite = SpriteBank.Building(Def.Type);
             if (artSprite != null)
@@ -214,6 +226,8 @@ namespace SnoopyKnights.Buildings
             var c = body.color;
             c.a = 0.35f + 0.65f * ConstructionProgress;
             body.color = c;
+            // The shadow deepens as the building becomes solid.
+            shadow.color = new Color(0f, 0f, 0f, 0.12f + 0.2f * ConstructionProgress);
             buildBar.Set(ConstructionProgress);
             if (ConstructionProgress >= 1f)
                 FinishConstruction();
@@ -224,6 +238,7 @@ namespace SnoopyKnights.Buildings
             ConstructionProgress = 1f;
             State = BuildingState.Operational;
             var c = body.color; c.a = 1f; body.color = c;
+            shadow.color = new Color(0f, 0f, 0f, 0.32f);
             buildBar.Show(false);
             Completed?.Invoke(this);
         }

@@ -89,6 +89,9 @@ namespace SnoopyKnights.EditorTools
             game.Units.Spawn(UnitType.Raider, GridMap.TileCenter(new Vector2Int(origin.x + 8, origin.y - 3)));
             game.Units.Spawn(UnitType.Brute, GridMap.TileCenter(new Vector2Int(origin.x + 9, origin.y - 2)));
 
+            // A guard right behind the Town Center, to check y-sorted occlusion.
+            game.Units.Spawn(UnitType.Guard, GridMap.TileCenter(new Vector2Int(origin.x + 1, origin.y + 3)));
+
             // Frame the base.
             game.Cam.SetView(new Vector2(origin.x + 1.5f, origin.y + 2f), 8.5f);
         }
@@ -121,7 +124,8 @@ namespace SnoopyKnights.EditorTools
             RenderTexture.active = null;
 
             File.WriteAllBytes(outPath, tex.EncodeToPNG());
-            Debug.Log($"[Screenshot] Wrote {outPath} ({Width}x{Height}).");
+            int fx = Object.FindObjectsByType<Rendering.FadeOutSprite>(FindObjectsSortMode.None).Length;
+            Debug.Log($"[Screenshot] Wrote {outPath} ({Width}x{Height}). Live fx sprites: {fx}.");
         }
     }
 }

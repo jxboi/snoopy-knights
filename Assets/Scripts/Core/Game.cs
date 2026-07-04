@@ -60,11 +60,16 @@ namespace SnoopyKnights.Core
             Economy = CreateChild<Economy.EconomySystem>("Economy");
             Economy.Init(Stock, Buildings, Units);
 
-            // Watchtowers get their combat behaviour on completion.
+            // Watchtowers get their combat behaviour on completion; hearth
+            // buildings get ambient chimney smoke.
             Buildings.BuildingCompleted += b =>
             {
                 if (b.Def.Type == BuildingType.Watchtower)
                     b.gameObject.AddComponent<Combat.TowerCombat>().Init(b, Units);
+                if (b.Def.Type == BuildingType.TownCenter ||
+                    b.Def.Type == BuildingType.Kitchen ||
+                    b.Def.Type == BuildingType.House)
+                    b.gameObject.AddComponent<Rendering.BuildingSmoke>().Init(b.ChimneyWorld);
             };
 
             Waves = CreateChild<Waves.WaveManager>("Waves");

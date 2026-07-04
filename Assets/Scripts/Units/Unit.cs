@@ -41,6 +41,7 @@ namespace SnoopyKnights.Units
         SpriteRenderer flash;
         Transform icon;
         WorldBar healthBar;
+        UnityEngine.Rendering.SortingGroup sortGroup;
         bool working;
         float workAnimT;
         float flashT;
@@ -60,13 +61,21 @@ namespace SnoopyKnights.Units
 
         void BuildVisuals()
         {
+            // The composite y-sorts against buildings and trees by the feet baseline.
+            sortGroup = gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>();
+            UpdateSortOrder();
+
+            var s = SpriteFactory.NewRenderer(transform, "Shadow", SpriteFactory.SoftCircle,
+                new Color(0f, 0f, 0f, 0.34f), SortLayer.Unit - 5, new Vector2(0f, -0.4f));
+            s.transform.localScale = new Vector3(0.68f, 0.28f, 1f);
+
             var artSprite = SpriteBank.Unit(Def.Type);
             if (artSprite != null)
             {
                 body = SpriteFactory.NewRenderer(transform, "Body", artSprite, Color.white,
                     SortLayer.Unit + 1, Vector2.zero, 1f);
-                // Enemies get a subtle red wash to read as hostile at a glance.
-                if (Def.IsEnemy) body.color = new Color(1f, 0.82f, 0.82f);
+                // Enemies get a red wash to read as hostile at a glance.
+                if (Def.IsEnemy) body.color = new Color(1f, 0.72f, 0.72f);
                 icon = body.transform; // the work-bob animates the whole character
             }
             else
@@ -144,6 +153,13 @@ namespace SnoopyKnights.Units
             UpdateWorkAnim(Time.deltaTime);
             UpdateFlash(Time.deltaTime);
             Tick(Time.deltaTime);
+            UpdateSortOrder();
+        }
+
+        void UpdateSortOrder()
+        {
+            // +1: at an equal baseline the unit stands in front of the building.
+            sortGroup.sortingOrder = SortLayer.World(transform.position.y - 0.38f) + 1;
         }
 
         void UpdateMovement(float dt)
