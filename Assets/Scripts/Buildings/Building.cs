@@ -116,10 +116,18 @@ namespace SnoopyKnights.Buildings
                 float scale = unitWidth > 0.01f ? w / unitWidth : 1f;
                 body.transform.localScale = new Vector3(scale, scale, 1f);
 
+                // Structures stand upright out of the tilted ground; the Farm is
+                // a tilled field, so it stays flat like the terrain.
+                if (Def.Type != BuildingType.Farm)
+                    body.transform.localRotation = ViewTilt.Upright;
+
                 var toolIcon = SpriteBank.BuildingIcon(Def.Type);
                 if (toolIcon != null)
-                    SpriteFactory.NewRenderer(transform, "Icon", toolIcon, Color.white,
-                        order + 1, new Vector2(0f, h * 0.5f - 0.5f), 0.55f);
+                {
+                    var icon = SpriteFactory.NewRenderer(transform, "Icon", toolIcon, Color.white,
+                        order + 1, new Vector2(0f, ViewTilt.MarkerY(h * 0.5f - 0.5f)), 0.55f);
+                    icon.transform.localRotation = ViewTilt.Upright;
+                }
             }
             else
             {
@@ -147,7 +155,7 @@ namespace SnoopyKnights.Buildings
 
             buildBar = WorldBar.Create(transform, new Vector2(0f, -h * 0.5f + 0.18f),
                 w * 0.8f, new Color(0.35f, 0.7f, 1f));
-            healthBar = WorldBar.Create(transform, new Vector2(0f, h * 0.5f - 0.18f),
+            healthBar = WorldBar.Create(transform, new Vector2(0f, ViewTilt.MarkerY(h * 0.5f - 0.18f)),
                 w * 0.8f, new Color(0.3f, 0.85f, 0.3f));
             healthBar.Show(false);
 

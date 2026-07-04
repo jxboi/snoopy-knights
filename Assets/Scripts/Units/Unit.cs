@@ -42,6 +42,7 @@ namespace SnoopyKnights.Units
         Transform icon;
         WorldBar healthBar;
         UnityEngine.Rendering.SortingGroup sortGroup;
+        Vector3 bodyRestPos; // billboard lift; the work-bob adds on top of it
         bool working;
         float workAnimT;
         float flashT;
@@ -66,14 +67,18 @@ namespace SnoopyKnights.Units
             UpdateSortOrder();
 
             var s = SpriteFactory.NewRenderer(transform, "Shadow", SpriteFactory.SoftCircle,
-                new Color(0f, 0f, 0f, 0.34f), SortLayer.Unit - 5, new Vector2(0f, -0.4f));
+                new Color(0f, 0f, 0f, 0.34f), SortLayer.Unit - 5, new Vector2(0f, -0.48f));
             s.transform.localScale = new Vector3(0.68f, 0.28f, 1f);
 
             var artSprite = SpriteBank.Unit(Def.Type);
             if (artSprite != null)
             {
+                // Stand upright out of the tilted ground; lift so the feet still
+                // touch the tile (the sprite pivot is at its center).
+                bodyRestPos = new Vector3(0f, ViewTilt.PivotLift(0.5f), 0f);
                 body = SpriteFactory.NewRenderer(transform, "Body", artSprite, Color.white,
-                    SortLayer.Unit + 1, Vector2.zero, 1f);
+                    SortLayer.Unit + 1, bodyRestPos, 1f);
+                body.transform.localRotation = ViewTilt.Upright;
                 // Enemies get a red wash to read as hostile at a glance.
                 if (Def.IsEnemy) body.color = new Color(1f, 0.72f, 0.72f);
                 icon = body.transform; // the work-bob animates the whole character
@@ -101,10 +106,11 @@ namespace SnoopyKnights.Units
                 new Color(1f, 1f, 1f, 0f), SortLayer.Unit + 5);
 
             carryDot = SpriteFactory.NewRenderer(transform, "Carry", SpriteFactory.Square,
-                Color.white, SortLayer.Unit + 3, new Vector2(0f, 0.45f), 0.24f);
+                Color.white, SortLayer.Unit + 3, new Vector2(0f, ViewTilt.MarkerY(0.45f)), 0.24f);
+            carryDot.transform.localRotation = ViewTilt.Upright;
             carryDot.gameObject.SetActive(false);
 
-            healthBar = WorldBar.Create(transform, new Vector2(0f, 0.55f), 0.7f,
+            healthBar = WorldBar.Create(transform, new Vector2(0f, ViewTilt.MarkerY(0.55f)), 0.7f,
                 Def.IsEnemy ? new Color(0.9f, 0.3f, 0.2f) : new Color(0.3f, 0.85f, 0.3f));
             healthBar.Show(false);
         }
@@ -200,14 +206,15 @@ namespace SnoopyKnights.Units
         protected void SetWorking(bool on)
         {
             working = on;
-            if (!on && icon != null) icon.localPosition = Vector3.zero;
+            if (!on && icon != null) icon.localPosition = icon == body.transform ? bodyRestPos : Vector3.zero;
         }
 
         void UpdateWorkAnim(float dt)
         {
             if (!working || icon == null) return;
             workAnimT += dt * 6f;
-            icon.localPosition = new Vector3(0f, Mathf.Abs(Mathf.Sin(workAnimT)) * 0.12f, 0f);
+            var rest = icon == body.transform ? bodyRestPos : Vector3.zero;
+            icon.localPosition = rest + new Vector3(0f, Mathf.Abs(Mathf.Sin(workAnimT)) * 0.12f, 0f);
         }
 
         public void SetCarrying(ResourceType? res)

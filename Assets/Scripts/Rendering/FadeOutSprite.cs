@@ -23,6 +23,7 @@ namespace SnoopyKnights.Rendering
             fx.startAlpha = color.a;
             fx.sr = SpriteFactory.NewRenderer(go.transform, "Sprite", sprite, color,
                 SortLayer.Highlight, Vector2.zero, scale);
+            fx.sr.transform.localRotation = ViewTilt.Upright; // face the tilted camera
         }
 
         void Update()

@@ -87,6 +87,8 @@ namespace SnoopyKnights.Buildings
                 float unitWidth = artSprite.bounds.size.x;
                 float scale = unitWidth > 0.01f ? def.Width / unitWidth : 1f;
                 body.transform.localScale = new Vector3(scale, scale, 1f);
+                if (def.Type != BuildingType.Farm) // preview stands like the real thing
+                    body.transform.localRotation = ViewTilt.Upright;
             }
             else
             {

@@ -1,16 +1,23 @@
 using SnoopyKnights.Grid;
+using SnoopyKnights.Rendering;
 using UnityEngine;
 
 namespace SnoopyKnights.CameraControl
 {
     /// <summary>
-    /// Orthographic top-down camera with pan, pinch/scroll zoom and map clamping.
+    /// Orthographic camera pitched down at the ground plane (ViewTilt) for an
+    /// isometric-style view, with pan, pinch/scroll zoom and map clamping.
     /// Receives gestures from InputRouter; does no input reading itself.
+    /// All world positions exposed here are points on the z=0 ground plane.
     /// </summary>
     public sealed class CameraController : MonoBehaviour
     {
         const float MinOrthoSize = 3.5f;
         const float EdgePadding = 2f;
+        const float CamDistance = 10f;
+
+        // Ground point at screen center sits this far north of transform.y.
+        static readonly float CenterOffset = CamDistance * ViewTilt.Tan;
 
         Camera cam;
         GridMap map;
@@ -20,6 +27,10 @@ namespace SnoopyKnights.CameraControl
         Vector3 appliedShake;
 
         public Camera Camera => cam;
+
+        /// <summary>The ground-plane point currently at screen center (save/load).</summary>
+        public Vector2 GroundCenterWorld =>
+            new Vector2(transform.position.x, transform.position.y + CenterOffset);
 
         public static CameraController CreateMainCamera(GridMap map)
         {
@@ -33,14 +44,21 @@ namespace SnoopyKnights.CameraControl
             var ctrl = go.AddComponent<CameraController>();
             ctrl.cam = cam;
             ctrl.map = map;
-            ctrl.maxOrthoSize = map.Height * 0.5f + EdgePadding;
+            // The tilt compresses the map vertically, so less zoom fits it all.
+            ctrl.maxOrthoSize = (map.Height * 0.5f + EdgePadding) * ViewTilt.Cos;
 
-            go.transform.position = new Vector3(map.Width * 0.5f, map.Height * 0.4f, -10f);
-            ctrl.ClampToMap();
+            go.transform.rotation = ViewTilt.Upright;
+            ctrl.CenterOn(new Vector2(map.Width * 0.5f, map.Height * 0.4f));
             return ctrl;
         }
 
-        public Vector2 ScreenToWorld(Vector2 screenPos) => cam.ScreenToWorldPoint(screenPos);
+        /// <summary>Casts the screen point onto the z=0 ground plane.</summary>
+        public Vector2 ScreenToWorld(Vector2 screenPos)
+        {
+            var ray = cam.ScreenPointToRay(screenPos);
+            float t = -ray.origin.z / ray.direction.z;
+            return ray.GetPoint(t);
+        }
 
         /// <summary>Adds screen shake. amount ~0.2 small, ~0.6 big hit. Scaled by zoom.</summary>
         public void Shake(float amount) => trauma = Mathf.Clamp01(trauma + amount);
@@ -64,10 +82,13 @@ namespace SnoopyKnights.CameraControl
 
         public float WorldUnitsPerPixel => cam.orthographicSize * 2f / Screen.height;
 
-        /// <summary>Grab-style pan: the world follows the finger.</summary>
+        /// <summary>Grab-style pan: the ground under the finger follows it.
+        /// Vertical screen distance covers more ground under the tilt.</summary>
         public void PanByScreenDelta(Vector2 screenDelta)
         {
-            Vector3 worldDelta = (Vector3)(screenDelta * WorldUnitsPerPixel);
+            float upp = WorldUnitsPerPixel;
+            var worldDelta = new Vector3(
+                screenDelta.x * upp, screenDelta.y * upp / ViewTilt.Cos, 0f);
             transform.position -= worldDelta;
             ClampToMap();
         }
@@ -84,7 +105,7 @@ namespace SnoopyKnights.CameraControl
 
         public void CenterOn(Vector2 worldPos)
         {
-            transform.position = new Vector3(worldPos.x, worldPos.y, -10f);
+            transform.position = new Vector3(worldPos.x, worldPos.y - CenterOffset, -CamDistance);
             ClampToMap();
         }
 
@@ -97,11 +118,13 @@ namespace SnoopyKnights.CameraControl
 
         void ClampToMap()
         {
-            float halfH = cam.orthographicSize;
-            float halfW = halfH * cam.aspect;
+            // Clamp the ground point at screen center; the screen's vertical
+            // half-extent covers orthoSize / cos on the tilted ground.
+            float halfH = cam.orthographicSize / ViewTilt.Cos;
+            float halfW = cam.orthographicSize * cam.aspect;
             var p = transform.position;
             p.x = ClampAxis(p.x, halfW, map.Width);
-            p.y = ClampAxis(p.y, halfH, map.Height);
+            p.y = ClampAxis(p.y + CenterOffset, halfH, map.Height) - CenterOffset;
             transform.position = p;
         }
 

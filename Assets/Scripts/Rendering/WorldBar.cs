@@ -13,6 +13,7 @@ namespace SnoopyKnights.Rendering
             var go = new GameObject("Bar");
             go.transform.SetParent(parent, false);
             go.transform.localPosition = new Vector3(localPos.x, localPos.y, 0f);
+            go.transform.localRotation = ViewTilt.Upright; // face the tilted camera
 
             var bar = go.AddComponent<WorldBar>();
             bar.width = width;

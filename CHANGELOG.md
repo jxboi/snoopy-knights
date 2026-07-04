@@ -1,5 +1,18 @@
 # Changelog
 
+## Milestone 12 — isometric view — 2026-07-04
+
+- The camera now pitches 40° down at the ground plane (`ViewTilt`), giving the
+  game an isometric-style look: terrain foreshortens and recedes into the
+  distance while buildings, trees, bushes, units, bars and floating text are
+  billboarded upright, rising out of the ground. The Farm stays flat — it's a
+  tilled field, not a structure.
+- All simulation stays on the flat XY grid; the tilt is purely a view
+  transform. Input raycasts screen taps onto the ground plane, panning covers
+  more ground vertically to keep the world under the finger, and camera
+  clamping/centering works on the ground point at screen center.
+- Saves store the ground point at screen center, so views restore correctly.
+
 ## Milestone 11 — graphics polish — 2026-07-04
 
 - Soft drop shadows under every unit and building (they deepen as a site

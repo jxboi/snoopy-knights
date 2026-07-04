@@ -140,7 +140,7 @@ namespace SnoopyKnights.Save
             data.stats.buildingsLost = game.Stats.BuildingsLost;
             data.stats.playSeconds = game.Stats.PlaySeconds;
 
-            var camPos = game.Cam.transform.position;
+            var camPos = game.Cam.GroundCenterWorld;
             data.camX = camPos.x;
             data.camY = camPos.y;
             data.camSize = game.Cam.Camera.orthographicSize;

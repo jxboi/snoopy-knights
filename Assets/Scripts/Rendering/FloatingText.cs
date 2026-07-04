@@ -15,6 +15,7 @@ namespace SnoopyKnights.Rendering
         {
             var go = new GameObject("FloatingText");
             go.transform.position = new Vector3(pos.x, pos.y + 0.3f, 0f);
+            go.transform.rotation = ViewTilt.Upright; // face the tilted camera
 
             var mesh = go.AddComponent<TextMesh>();
             mesh.text = text;
@@ -34,7 +35,7 @@ namespace SnoopyKnights.Rendering
         void Update()
         {
             life += Time.deltaTime;
-            transform.position += Vector3.up * (RiseSpeed * Time.deltaTime);
+            transform.position += transform.up * (RiseSpeed * Time.deltaTime);
             float t = life / Lifetime;
             var c = mesh.color;
             c.a = 1f - t * t;

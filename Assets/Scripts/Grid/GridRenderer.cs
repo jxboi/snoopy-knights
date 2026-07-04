@@ -154,7 +154,9 @@ namespace SnoopyKnights.Grid
                     : SpriteBank.Rock;
                 ov.color = Color.white;
                 ov.transform.localScale = new Vector3(scale, scale, 1f);
-                ov.transform.localPosition = GridMap.TileCenter(x, y) + new Vector2(jx, jy);
+                ov.transform.localRotation = ViewTilt.Upright;
+                ov.transform.localPosition = GridMap.TileCenter(x, y)
+                    + new Vector2(jx, jy + ViewTilt.PivotLift(0.5f * scale));
                 ov.sortingOrder = SortLayer.World(y + 0.1f + jy);
 
                 // A second, smaller tree behind makes forests read denser.
@@ -171,8 +173,9 @@ namespace SnoopyKnights.Grid
                     bool autumn2 = Hash(x + 71, y + 3) < 0.22f && SpriteBank.TreeAutumn != null;
                     ov2.sprite = autumn2 ? SpriteBank.TreeAutumn : SpriteBank.Tree;
                     ov2.transform.localScale = new Vector3(scale * 0.8f, scale * 0.8f, 1f);
+                    ov2.transform.localRotation = ViewTilt.Upright;
                     ov2.transform.localPosition = GridMap.TileCenter(x, y)
-                        + new Vector2(-jx + 0.22f, 0.3f + jy * 0.5f);
+                        + new Vector2(-jx + 0.22f, 0.3f + jy * 0.5f + ViewTilt.PivotLift(0.4f * scale));
                     ov2.sortingOrder = SortLayer.World(y + 0.4f + jy * 0.5f);
                 }
                 else if (ov2 != null) ov2.gameObject.SetActive(false);
@@ -182,6 +185,7 @@ namespace SnoopyKnights.Grid
                 ov.sprite = SpriteFactory.Triangle;
                 ov.color = TreeColor;
                 ov.transform.localScale = new Vector3(0.8f, 0.9f, 1f);
+                ov.transform.localRotation = ViewTilt.Upright;
                 ov.sortingOrder = SortLayer.World(y);
             }
             else
@@ -230,10 +234,13 @@ namespace SnoopyKnights.Grid
             {
                 float jx = (Hash(x + 7, y + 19) - 0.5f) * 0.4f;
                 float jy = (Hash(x + 43, y + 11) - 0.5f) * 0.4f;
+                float scale = 0.4f + 0.22f * Hash(x + 3, y + 57);
                 d = SpriteFactory.NewRenderer(transform, $"Bush {x},{y}",
                     SpriteBank.Bush, Color.white, SortLayer.Decor,
-                    GridMap.TileCenter(x, y) + new Vector2(jx, jy),
-                    0.4f + 0.22f * Hash(x + 3, y + 57));
+                    GridMap.TileCenter(x, y)
+                        + new Vector2(jx, jy + ViewTilt.PivotLift(0.5f * scale)),
+                    scale);
+                d.transform.localRotation = ViewTilt.Upright;
                 deco[Idx(x, y)] = d;
             }
             d.gameObject.SetActive(true);
