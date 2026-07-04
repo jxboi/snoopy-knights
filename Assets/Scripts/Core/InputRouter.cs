@@ -13,6 +13,8 @@ namespace SnoopyKnights.Core
         /// <summary>If true, one-finger drags go to the mode instead of panning.</summary>
         bool UsesDrag { get; }
         void OnTap(Vector2 world);
+        /// <summary>Mouse moved with no button held (desktop only; touch has no hover).</summary>
+        void OnHover(Vector2 world);
         void OnDragStart(Vector2 world);
         void OnDrag(Vector2 world);
         void OnDragEnd(Vector2 world);
@@ -126,6 +128,7 @@ namespace SnoopyKnights.Core
             if (Input.GetMouseButtonDown(0)) BeginPointer(pos, -1);
             else if (Input.GetMouseButton(0)) MovePointer(pos);
             else if (Input.GetMouseButtonUp(0)) EndPointer(pos);
+            else if (mode != null && !IsOverUI(-1)) mode.OnHover(cam.ScreenToWorld(pos));
         }
 
         // ---- Shared pointer state machine ---------------------------------

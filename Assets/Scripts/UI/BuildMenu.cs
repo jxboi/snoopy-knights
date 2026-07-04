@@ -150,6 +150,7 @@ namespace SnoopyKnights.UI
             Vector2 center = game.Cam.ScreenToWorld(new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
             placement = new BuildPlacementMode(game.Buildings, game.Map, def, center);
             placement.Changed += RefreshConfirm;
+            placement.PlaceRequested += ConfirmPlacement;
             game.InputRouter.Mode = placement;
 
             strip.gameObject.SetActive(false);

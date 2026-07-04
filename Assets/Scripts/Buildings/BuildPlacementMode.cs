@@ -6,14 +6,16 @@ using UnityEngine;
 namespace SnoopyKnights.Buildings
 {
     /// <summary>
-    /// Input mode while placing a building: tap moves the ghost, drag still
-    /// pans the camera. Confirm/cancel are driven by UI buttons.
+    /// Input mode while placing a building: tap or drag moves the ghost so you
+    /// can slide it into position. Confirm/cancel are driven by UI buttons.
     /// </summary>
     public sealed class BuildPlacementMode : IInputMode
     {
-        public bool UsesDrag => false;
+        public bool UsesDrag => true;
 
         public event System.Action Changed;
+        /// <summary>Fired when the player taps the map to drop the building at its current spot.</summary>
+        public event System.Action PlaceRequested;
 
         readonly BuildingManager manager;
         readonly GridMap map;
@@ -34,9 +36,14 @@ namespace SnoopyKnights.Buildings
             MoveTo(WorldToOrigin(startWorld));
         }
 
-        public void OnTap(Vector2 world) => MoveTo(WorldToOrigin(world));
-        public void OnDragStart(Vector2 world) { }
-        public void OnDrag(Vector2 world) { }
+        public void OnTap(Vector2 world)
+        {
+            MoveTo(WorldToOrigin(world));
+            PlaceRequested?.Invoke();
+        }
+        public void OnHover(Vector2 world) => MoveTo(WorldToOrigin(world));
+        public void OnDragStart(Vector2 world) => MoveTo(WorldToOrigin(world));
+        public void OnDrag(Vector2 world) => MoveTo(WorldToOrigin(world));
         public void OnDragEnd(Vector2 world) { }
 
         Vector2Int WorldToOrigin(Vector2 world)

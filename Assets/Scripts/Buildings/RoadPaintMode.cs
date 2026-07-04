@@ -26,6 +26,7 @@ namespace SnoopyKnights.Buildings
         }
 
         public void OnTap(Vector2 world) => TryPlace(GridMap.WorldToTile(world));
+        public void OnHover(Vector2 world) { }
 
         public void OnDragStart(Vector2 world)
         {
