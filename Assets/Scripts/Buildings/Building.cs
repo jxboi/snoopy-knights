@@ -28,9 +28,11 @@ namespace SnoopyKnights.Buildings
         public event System.Action<Building> Destroyed;
 
         SpriteRenderer body;
+        SpriteRenderer flash;
         WorldBar buildBar;
         WorldBar healthBar;
         SpriteRenderer[] outputDots;
+        float flashT;
 
         // ---- Economy bookkeeping (used by worker/carrier AI) -----------------
 
@@ -127,6 +129,9 @@ namespace SnoopyKnights.Buildings
                 SpriteFactory.NewRenderer(transform, "Icon", iconSprite, Def.IconColor,
                     order + 2, Vector2.zero, Mathf.Min(w, h) * 0.5f);
             }
+
+            flash = SpriteFactory.NewRenderer(body.transform, "Flash", body.sprite,
+                new Color(1f, 1f, 1f, 0f), order + 3);
 
             buildBar = WorldBar.Create(transform, new Vector2(0f, -h * 0.5f + 0.18f),
                 w * 0.8f, new Color(0.35f, 0.7f, 1f));
@@ -235,8 +240,34 @@ namespace SnoopyKnights.Buildings
             Health = Mathf.Max(0, Health - amount);
             healthBar.Show(Health < MaxHealth);
             healthBar.Set((float)Health / MaxHealth);
+
+            flashT = 0.14f;
+            Core.Game.Instance?.Cam?.Shake(Mathf.Min(0.28f, amount * 0.012f));
+
             if (Health == 0)
+            {
+                Core.Game.Instance?.Cam?.Shake(0.5f);
+                SpawnDestructionPuff();
                 Destroyed?.Invoke(this);
+            }
+        }
+
+        void SpawnDestructionPuff()
+        {
+            for (int i = 0; i < 10; i++)
+                Rendering.FadeOutSprite.Spawn(
+                    CenterWorld + Random.insideUnitCircle * (Def.Width * 0.5f),
+                    SpriteFactory.Square, new Color(0.55f, 0.4f, 0.3f, 0.9f),
+                    Random.Range(0.2f, 0.4f), 0.5f);
+        }
+
+        void Update()
+        {
+            if (flashT <= 0f) return;
+            flashT -= Time.deltaTime;
+            var c = flash.color;
+            c.a = Mathf.Max(0f, flashT / 0.14f) * 0.8f;
+            flash.color = c;
         }
     }
 }

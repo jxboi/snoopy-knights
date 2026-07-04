@@ -134,7 +134,11 @@ namespace SnoopyKnights.Units
         protected override void OnDie()
         {
             if (Def.GoldReward > 0)
+            {
                 Ctx.Stock.Add(ResourceType.Gold, Def.GoldReward);
+                Rendering.FloatingText.Spawn(new Vector2(Pos.x, Pos.y + 0.5f),
+                    $"+{Def.GoldReward}g", new Color(1f, 0.85f, 0.2f), 1f);
+            }
         }
     }
 }

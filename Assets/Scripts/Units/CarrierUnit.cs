@@ -94,6 +94,9 @@ namespace SnoopyKnights.Units
                     if (timer > 0f) break;
                     SetWorking(false);
                     Ctx.Stock.Add(carried, 1);
+                    Rendering.FloatingText.Spawn(new Vector2(Pos.x, Pos.y + 0.5f),
+                        $"+1 {Res.ResourceInfo.ShortName(carried)}",
+                        Res.ResourceInfo.Color(carried), 0.8f);
                     hasCargo = false;
                     SetCarrying(null);
                     state = State.Idle;

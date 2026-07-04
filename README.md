@@ -6,7 +6,9 @@ connect it with roads, keep your people fed, train defenders, and survive
 5 enemy waves.
 
 **Complete** — one polished mission, playable start to finish with touch only,
-now with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*).
+with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*) and a game-feel
+pass (unit facing, hit flashes, floating damage/resource text, death puffs,
+camera shake, button feedback).
 
 ## The mission
 

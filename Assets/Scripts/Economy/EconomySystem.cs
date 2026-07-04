@@ -82,7 +82,7 @@ namespace SnoopyKnights.Economy
                     var snapshot = new System.Collections.Generic.List<Unit>(units.All);
                     foreach (var u in snapshot)
                         if (!u.Def.IsEnemy)
-                            u.TakeDamage(1);
+                            u.Starve(1);
                 }
             }
             else

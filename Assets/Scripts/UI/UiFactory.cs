@@ -76,6 +76,7 @@ namespace SnoopyKnights.UI
         {
             var rt = Panel(parent, name, bg);
             var btn = rt.gameObject.AddComponent<Button>();
+            rt.gameObject.AddComponent<ButtonBounce>();
             btn.onClick.AddListener(() => Audio.AudioManager.Play(Audio.Sfx.Tap));
             if (onClick != null) btn.onClick.AddListener(() => onClick());
             var text = Label(rt, "Label", label, fontSize, Color.white, TextAnchor.MiddleCenter);

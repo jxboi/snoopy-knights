@@ -1,5 +1,17 @@
 # Changelog
 
+## Milestone 9 — game feel — 2026-07-04
+
+- Units face their travel direction (sprite flips) on top of the work bob.
+- Hit flash: units and buildings flash white when damaged (white silhouette
+  overlay, so it never fights the sprite or construction fade).
+- Floating text: damage numbers in combat, `+N g` gold bounties on enemy
+  kills, `+1 wood/stone/food` on carrier deliveries. Starvation stays quiet.
+- Death dust puffs for units; a bigger rubble burst when a building falls.
+- Camera shake — small on any building hit, large when one is destroyed —
+  kept fully separate from pan/zoom/clamp.
+- Buttons punch-scale on press for tactile feedback.
+
 ## Milestone 8 — real pixel art — 2026-07-04
 
 - Swapped procedural placeholder shapes for **Kenney pixel art** (CC0):

@@ -38,10 +38,12 @@ namespace SnoopyKnights.Units
         int pathIndex;
         SpriteRenderer body;
         SpriteRenderer carryDot;
+        SpriteRenderer flash;
         Transform icon;
         WorldBar healthBar;
         bool working;
         float workAnimT;
+        float flashT;
 
         public bool IsMoving => path != null;
         public Vector2Int CurrentTile => GridMap.WorldToTile(transform.position);
@@ -84,6 +86,10 @@ namespace SnoopyKnights.Units
                 icon = SpriteFactory.NewRenderer(transform, "Icon", iconSprite,
                     new Color(1f, 1f, 1f, 0.85f), SortLayer.Unit + 2, Vector2.zero, 0.24f).transform;
             }
+
+            // White silhouette for the hit-flash, matching the body sprite.
+            flash = SpriteFactory.NewRenderer(body.transform, "Flash", body.sprite,
+                new Color(1f, 1f, 1f, 0f), SortLayer.Unit + 5);
 
             carryDot = SpriteFactory.NewRenderer(transform, "Carry", SpriteFactory.Square,
                 Color.white, SortLayer.Unit + 3, new Vector2(0f, 0.45f), 0.24f);
@@ -136,6 +142,7 @@ namespace SnoopyKnights.Units
             if (IsDead) return;
             UpdateMovement(Time.deltaTime);
             UpdateWorkAnim(Time.deltaTime);
+            UpdateFlash(Time.deltaTime);
             Tick(Time.deltaTime);
         }
 
@@ -149,10 +156,25 @@ namespace SnoopyKnights.Units
             }
             Vector2 target = GridMap.TileCenter(path[pathIndex]);
             float speed = Def.MoveSpeed * Map.SpeedMultiplier(CurrentTile);
-            Vector2 next = Vector2.MoveTowards(transform.position, target, speed * dt);
+            Vector2 pos = transform.position;
+            Vector2 next = Vector2.MoveTowards(pos, target, speed * dt);
             transform.position = next;
+
+            // Face travel direction.
+            float dx = next.x - pos.x;
+            if (Mathf.Abs(dx) > 0.0005f) body.flipX = dx < 0f;
+
             if ((next - target).sqrMagnitude < 0.003f)
                 pathIndex++;
+        }
+
+        void UpdateFlash(float dt)
+        {
+            if (flashT <= 0f) return;
+            flashT -= dt;
+            var c = flash.color;
+            c.a = Mathf.Max(0f, flashT / 0.14f) * 0.85f;
+            flash.color = c;
         }
 
         protected virtual void Tick(float dt) { }
@@ -195,17 +217,31 @@ namespace SnoopyKnights.Units
         public bool IsAlive => !IsDead;
         public Vector2 AimPoint => transform.position;
 
-        public void TakeDamage(int amount) => TakeDamage(amount, null);
+        public void TakeDamage(int amount) => ApplyDamage(amount, null, combat: true);
 
-        public void TakeDamage(int amount, Unit attacker)
+        public void TakeDamage(int amount, Unit attacker) => ApplyDamage(amount, attacker, combat: true);
+
+        /// <summary>Starvation: quiet chip damage, no hit SFX or numbers.</summary>
+        public void Starve(int amount) => ApplyDamage(amount, null, combat: false);
+
+        void ApplyDamage(int amount, Unit attacker, bool combat)
         {
             if (IsDead) return;
-            Audio.AudioManager.Play(Audio.Sfx.Hit);
             Health = Mathf.Max(0, Health - amount);
             healthBar.Show(Health < Def.MaxHealth);
             healthBar.Set((float)Health / Def.MaxHealth);
+
+            if (combat)
+            {
+                Audio.AudioManager.Play(Audio.Sfx.Hit);
+                flashT = 0.14f;
+                Rendering.FloatingText.Spawn(
+                    new Vector2(Pos.x, Pos.y + 0.4f), amount.ToString(),
+                    Def.IsEnemy ? new Color(1f, 0.95f, 0.5f) : new Color(1f, 0.55f, 0.5f), 0.85f);
+            }
+
             if (Health == 0) Die();
-            else OnDamaged(attacker);
+            else if (combat) OnDamaged(attacker);
         }
 
         /// <summary>Lets subclasses react (fight back, retarget).</summary>
@@ -232,6 +268,11 @@ namespace SnoopyKnights.Units
         void Die()
         {
             IsDead = true;
+            // Dust puff on death.
+            for (int i = 0; i < 4; i++)
+                Rendering.FadeOutSprite.Spawn(
+                    Pos + Random.insideUnitCircle * 0.3f, Rendering.SpriteFactory.Circle,
+                    new Color(0.8f, 0.75f, 0.65f, 0.9f), Random.Range(0.25f, 0.45f), 0.35f);
             OnDie();
             Died?.Invoke(this);
         }

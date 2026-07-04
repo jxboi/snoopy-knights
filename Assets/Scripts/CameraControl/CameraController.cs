@@ -16,6 +16,9 @@ namespace SnoopyKnights.CameraControl
         GridMap map;
         float maxOrthoSize = 12f;
 
+        float trauma;
+        Vector3 appliedShake;
+
         public Camera Camera => cam;
 
         public static CameraController CreateMainCamera(GridMap map)
@@ -38,6 +41,26 @@ namespace SnoopyKnights.CameraControl
         }
 
         public Vector2 ScreenToWorld(Vector2 screenPos) => cam.ScreenToWorldPoint(screenPos);
+
+        /// <summary>Adds screen shake. amount ~0.2 small, ~0.6 big hit. Scaled by zoom.</summary>
+        public void Shake(float amount) => trauma = Mathf.Clamp01(trauma + amount);
+
+        void LateUpdate()
+        {
+            // Keep shake separate from the panned/clamped base position.
+            transform.position -= appliedShake;
+            appliedShake = Vector3.zero;
+
+            if (trauma > 0f)
+            {
+                trauma = Mathf.Max(0f, trauma - Time.unscaledDeltaTime * 1.6f);
+                float mag = trauma * trauma * cam.orthographicSize * 0.12f;
+                appliedShake = new Vector3(
+                    (Random.value * 2f - 1f) * mag,
+                    (Random.value * 2f - 1f) * mag, 0f);
+                transform.position += appliedShake;
+            }
+        }
 
         public float WorldUnitsPerPixel => cam.orthographicSize * 2f / Screen.height;
 
