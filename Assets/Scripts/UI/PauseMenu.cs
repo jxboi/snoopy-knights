@@ -74,7 +74,7 @@ namespace SnoopyKnights.UI
         {
             overlay.gameObject.SetActive(false);
             if (game.Mission.State == MissionState.Playing)
-                Time.timeScale = 1f;
+                GameSpeed.Apply(); // back to whatever speed was selected
         }
 
         void SaveGame()

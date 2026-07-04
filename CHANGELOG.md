@@ -1,5 +1,19 @@
 # Changelog
 
+## Milestone 10 — polish — 2026-07-04
+
+- Wave intel: the top banner now says where the next attack comes from
+  ("scouts report raiders to the east") and, during a wave, how many enemies
+  remain. In the last 10 seconds before a wave the banner pulses red, with
+  countdown ticks for the final 5.
+- 2x fast-forward toggle next to the pause button (resets to 1x on
+  restart/load; pausing and resuming keeps the chosen speed).
+- Objectives chime and flash green the moment they complete (quiet on load,
+  so restored missions don't replay old chimes).
+- End screen: victory/defeat now fades in and shows mission stats — time
+  played, waves survived, enemies slain, villagers and buildings lost. Stats
+  survive save/load (old saves still load; their tallies start at zero).
+
 ## Milestone 9 — game feel — 2026-07-04
 
 - Units face their travel direction (sprite flips) on top of the work bob.

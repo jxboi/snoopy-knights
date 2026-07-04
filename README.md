@@ -6,9 +6,10 @@ connect it with roads, keep your people fed, train defenders, and survive
 5 enemy waves.
 
 **Complete** — one polished mission, playable start to finish with touch only,
-with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*) and a game-feel
+with real pixel art (CC0 Kenney *Tiny Town* + *Tiny Dungeon*), a game-feel
 pass (unit facing, hit flashes, floating damage/resource text, death puffs,
-camera shake, button feedback).
+camera shake, button feedback) and a polish pass (wave-direction intel,
+2x fast-forward, objective chimes, end-of-mission stats).
 
 ## The mission
 
@@ -43,6 +44,7 @@ win. Lose the Town Center (or all your storage) and it's over.
 | Build button | Open build menu → tap a card → tap the map to aim → Place |
 | Road card | Drag on the map to paint roads (1 stone/tile), then Done |
 | Selected soldier + tap | Move that soldier's guard post |
+| 1x/2x button | Toggle fast-forward |
 | II button | Pause: resume / save / load / restart |
 
 In the editor: left-drag pans, mouse wheel zooms, click taps.

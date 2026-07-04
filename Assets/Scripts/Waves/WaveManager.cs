@@ -35,6 +35,11 @@ namespace SnoopyKnights.Waves
         public float NextWaveIn { get; private set; }
         public bool WaveActive { get; private set; }
         public bool AllWavesCleared { get; private set; }
+        public int EnemiesAlive => aliveEnemies;
+
+        /// <summary>Edges the upcoming wave spawns from; empty once every wave has begun.</summary>
+        public SpawnEdge[] NextWaveEdges =>
+            WaveNumber < waves.Length ? waves[WaveNumber].Edges : System.Array.Empty<SpawnEdge>();
 
         public event System.Action<int> WaveStarted;
         public event System.Action<int> WaveCleared;

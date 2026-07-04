@@ -21,6 +21,7 @@ namespace SnoopyKnights.Save
         public List<BuildingSave> buildings = new List<BuildingSave>();
         public List<UnitSave> units = new List<UnitSave>();
         public WaveSave wave = new WaveSave();
+        public StatsSave stats = new StatsSave(); // zeroes when loading a pre-stats save
 
         public float camX, camY, camSize;
     }
@@ -52,6 +53,13 @@ namespace SnoopyKnights.Save
         public int waveNumber;
         public int wavesCleared;
         public float nextIn;
+    }
+
+    [System.Serializable]
+    public sealed class StatsSave
+    {
+        public int enemiesSlain, villagersLost, buildingsLost;
+        public float playSeconds;
     }
 
     /// <summary>
@@ -126,6 +134,11 @@ namespace SnoopyKnights.Save
             data.wave.waveNumber = game.Waves.WaveNumber;
             data.wave.wavesCleared = game.Waves.WavesCleared;
             data.wave.nextIn = game.Waves.NextWaveIn;
+
+            data.stats.enemiesSlain = game.Stats.EnemiesSlain;
+            data.stats.villagersLost = game.Stats.VillagersLost;
+            data.stats.buildingsLost = game.Stats.BuildingsLost;
+            data.stats.playSeconds = game.Stats.PlaySeconds;
 
             var camPos = game.Cam.transform.position;
             data.camX = camPos.x;

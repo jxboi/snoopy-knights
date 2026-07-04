@@ -14,6 +14,7 @@ namespace SnoopyKnights.UI
         public ObjectivesPanel ObjectivesPanel { get; private set; }
         public GameOverScreen GameOverScreen { get; private set; }
         public PauseMenu PauseMenu { get; private set; }
+        public SpeedButton SpeedButton { get; private set; }
 
         public static Hud Create(Game game)
         {
@@ -30,8 +31,9 @@ namespace SnoopyKnights.UI
             hud.UnitPanel = UnitPanel.Create(safe, game);
             hud.WavePanel = WavePanel.Create(safe, game.Waves);
             hud.ObjectivesPanel = ObjectivesPanel.Create(safe, game.Mission);
+            hud.SpeedButton = SpeedButton.Create(safe); // before PauseMenu: its overlay must cover this
             hud.PauseMenu = PauseMenu.Create(safe, game);
-            hud.GameOverScreen = GameOverScreen.Create(safe, game.Mission);
+            hud.GameOverScreen = GameOverScreen.Create(safe, game);
             return hud;
         }
     }

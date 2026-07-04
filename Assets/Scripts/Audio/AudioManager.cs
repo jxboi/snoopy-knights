@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SnoopyKnights.Audio
 {
-    public enum Sfx { Tap, Place, Complete, Arrow, Hit, Horn, Victory, Defeat }
+    public enum Sfx { Tap, Place, Complete, Arrow, Hit, Horn, Victory, Defeat, Tick, Objective }
 
     /// <summary>
     /// Placeholder audio: every clip is synthesized at startup (sine tones with
@@ -55,6 +55,8 @@ namespace SnoopyKnights.Audio
             clips[Sfx.Horn] = Tone("horn", 320f, 180f, 0.7f);
             clips[Sfx.Victory] = Sequence("victory", (523f, 0.12f), (659f, 0.12f), (784f, 0.12f), (1047f, 0.3f));
             clips[Sfx.Defeat] = Sequence("defeat", (392f, 0.15f), (311f, 0.15f), (262f, 0.35f));
+            clips[Sfx.Tick] = Tone("tick", 1250f, 1250f, 0.04f);
+            clips[Sfx.Objective] = Sequence("objective", (659f, 0.08f), (988f, 0.18f));
         }
 
         static AudioClip Tone(string name, float freqStart, float freqEnd, float seconds)

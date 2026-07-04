@@ -28,13 +28,14 @@ namespace SnoopyKnights.Core
         public Economy.EconomySystem Economy { get; private set; }
         public Waves.WaveManager Waves { get; private set; }
         public Mission.MissionController Mission { get; private set; }
+        public Mission.MissionStats Stats { get; private set; }
         public UI.Hud Hud { get; private set; }
 
         void Awake()
         {
             Instance = this;
             Application.targetFrameRate = 60;
-            Time.timeScale = 1f; // fresh start after a restart from the end screen
+            GameSpeed.Reset(); // back to 1x and unfrozen after a restart from the end screen
             AudioManager.Ensure();
 
             Map = MapGenerator.Generate(seed: 20260704);
@@ -68,6 +69,9 @@ namespace SnoopyKnights.Core
 
             Waves = CreateChild<Waves.WaveManager>("Waves");
             Waves.Init(Map, Units, Stock);
+
+            Stats = CreateChild<Mission.MissionStats>("Stats");
+            Stats.Init(Units, Buildings);
 
             var pending = Save.SaveSystem.ConsumePending();
             if (pending != null)
@@ -159,6 +163,8 @@ namespace SnoopyKnights.Core
             }
 
             Waves.Restore(data.wave.waveNumber, data.wave.wavesCleared, data.wave.nextIn, enemies);
+            Stats.Restore(data.stats.enemiesSlain, data.stats.villagersLost,
+                data.stats.buildingsLost, data.stats.playSeconds);
             Cam.SetView(new Vector2(data.camX, data.camY), data.camSize);
 
             // A corrupt save without a Town Center would be unplayable; recover.
