@@ -40,6 +40,9 @@ namespace SnoopyKnights.Units
         SpriteRenderer carryDot;
         SpriteRenderer flash;
         Transform icon;
+        Rendering.SpriteAnimator animator; // non-null only when animated art exists
+        string animAction = "";
+        float oneShotT;
         WorldBar healthBar;
         UnityEngine.Rendering.SortingGroup sortGroup;
         Vector3 bodyRestPos; // billboard lift; the work-bob adds on top of it
@@ -71,7 +74,21 @@ namespace SnoopyKnights.Units
             s.transform.localScale = new Vector3(0.68f, 0.28f, 1f);
 
             var artSprite = SpriteBank.Unit(Def.Type);
-            if (artSprite != null)
+            if (SpriteBank.HasClips(Def.Type))
+            {
+                // Animated art present: frame clips (idle/walk/work/attack) drive
+                // the look. Frames use a bottom-center pivot so the feet sit on
+                // the tile with no lift; locomotion replaces the work-bob.
+                bodyRestPos = Vector3.zero;
+                body = SpriteFactory.NewRenderer(transform, "Body", null, Color.white,
+                    SortLayer.Unit + 1, bodyRestPos, 1f);
+                body.transform.localRotation = ViewTilt.Upright;
+                if (Def.IsEnemy) body.color = new Color(1f, 0.72f, 0.72f);
+                animator = body.gameObject.AddComponent<Rendering.SpriteAnimator>();
+                PlayLoop("idle"); // sets frame 0 so the flash silhouette below has a sprite
+                icon = null;
+            }
+            else if (artSprite != null)
             {
                 // Stand upright out of the tilted ground; lift so the feet still
                 // touch the tile (the sprite pivot is at its center).
@@ -159,6 +176,7 @@ namespace SnoopyKnights.Units
             UpdateWorkAnim(Time.deltaTime);
             UpdateFlash(Time.deltaTime);
             Tick(Time.deltaTime);
+            UpdateAnimState(Time.deltaTime);
             UpdateSortOrder();
         }
 
@@ -222,6 +240,47 @@ namespace SnoopyKnights.Units
             carryDot.gameObject.SetActive(res.HasValue);
             if (res.HasValue) carryDot.color = ResourceInfo.Color(res.Value);
         }
+
+        // ---- Frame animation (KaM-style clips; only when animated art exists) --
+
+        void UpdateAnimState(float dt)
+        {
+            if (animator == null) return;
+            if (oneShotT > 0f) { oneShotT -= dt; return; } // let a swing finish first
+            PlayLoop(IsMoving ? "walk" : (working ? "work" : "idle"));
+        }
+
+        void PlayLoop(string action)
+        {
+            if (animator == null || animAction == action) return;
+            // Fall back through the always-present locomotion clips so a partial
+            // clip set (e.g. walk only) still animates.
+            var frames = SpriteBank.Clip(Def.Type, action)
+                         ?? SpriteBank.Clip(Def.Type, "idle")
+                         ?? SpriteBank.Clip(Def.Type, "walk");
+            if (frames == null) return;
+            animAction = action;
+            animator.Play(action, frames, ClipFps(action), true);
+        }
+
+        /// <summary>Play a one-shot attack swing, then locomotion resumes automatically.</summary>
+        public void PlayAttackAnim()
+        {
+            if (animator == null) return;
+            var frames = SpriteBank.Clip(Def.Type, "attack");
+            if (frames == null) return;
+            float fps = ClipFps("attack");
+            oneShotT = frames.Length / fps;
+            animAction = ""; // force a fresh locomotion pick when the swing ends
+            animator.Play("attack", frames, fps, false);
+        }
+
+        static float ClipFps(string action) => action switch
+        {
+            "idle" => 5f,
+            "attack" => 12f,
+            _ => 9f, // walk, work
+        };
 
         /// <summary>Idle units gravitate toward the nearest storage so they're easy to find.</summary>
         protected void IdleDrift()

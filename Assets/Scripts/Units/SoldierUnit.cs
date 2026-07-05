@@ -86,6 +86,7 @@ namespace SnoopyKnights.Units
                 if (attackT <= 0f)
                 {
                     attackT = Def.AttackInterval;
+                    PlayAttackAnim();
                     if (Def.Ranged) Projectile.Spawn(Pos, target, Def.Damage);
                     else target.TakeDamage(Def.Damage, this);
                 }
